@@ -10,33 +10,63 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as FinancialsRouteImport } from './routes/financials'
+import { Route as HouseholdRouteImport } from './routes/household'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinancialsRoute = FinancialsRouteImport.update({
+  id: '/financials',
+  path: '/financials',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HouseholdRoute = HouseholdRouteImport.update({
+  id: '/household',
+  path: '/household',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
+  '/financials': typeof FinancialsRoute
+  '/household': typeof HouseholdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
+  '/financials': typeof FinancialsRoute
+  '/household': typeof HouseholdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
+  '/financials': typeof FinancialsRoute
+  '/household': typeof HouseholdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/compare' | '/financials' | '/household'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/compare' | '/financials' | '/household'
+  id: '__root__' | '/' | '/compare' | '/financials' | '/household'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompareRoute: typeof CompareRoute
+  FinancialsRoute: typeof FinancialsRoute
+  HouseholdRoute: typeof HouseholdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +78,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/financials': {
+      id: '/financials'
+      path: '/financials'
+      fullPath: '/financials'
+      preLoaderRoute: typeof FinancialsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/household': {
+      id: '/household'
+      path: '/household'
+      fullPath: '/household'
+      preLoaderRoute: typeof HouseholdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompareRoute: CompareRoute,
+  FinancialsRoute: FinancialsRoute,
+  HouseholdRoute: HouseholdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
