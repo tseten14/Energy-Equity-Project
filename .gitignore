@@ -16,6 +16,14 @@ dist-ssr
 .nitro
 *.local
 
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Seed download cache
+scripts/seed/.cache/
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars

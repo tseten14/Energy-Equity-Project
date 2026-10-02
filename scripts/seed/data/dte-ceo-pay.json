@@ -1,0 +1,41 @@
+{
+  "executive": "Gerardo (Jerry) Norcia",
+  "note": "Total column of the Summary Compensation Table. Norcia became CEO on July 1, 2019 and served until September 7, 2025, when he became Executive Chairman.",
+  "years": [
+    {
+      "year": 2019,
+      "total": 8228339,
+      "filing": "https://www.sec.gov/Archives/edgar/data/936340/000093634020000145/def14a2020.htm"
+    },
+    {
+      "year": 2020,
+      "total": 10605622,
+      "filing": "https://www.sec.gov/Archives/edgar/data/936340/000155837023004430/dte-20230504xdef14a.htm"
+    },
+    {
+      "year": 2021,
+      "total": 11128277,
+      "filing": "https://www.sec.gov/Archives/edgar/data/936340/000155837023004430/dte-20230504xdef14a.htm"
+    },
+    {
+      "year": 2022,
+      "total": 10458218,
+      "filing": "https://www.sec.gov/Archives/edgar/data/936340/000155837023004430/dte-20230504xdef14a.htm"
+    },
+    {
+      "year": 2023,
+      "total": 10278098,
+      "filing": "https://www.sec.gov/Archives/edgar/data/936340/000093634026000062/dte-20260312.htm"
+    },
+    {
+      "year": 2024,
+      "total": 12592002,
+      "filing": "https://www.sec.gov/Archives/edgar/data/936340/000093634026000062/dte-20260312.htm"
+    },
+    {
+      "year": 2025,
+      "total": 14156937,
+      "filing": "https://www.sec.gov/Archives/edgar/data/936340/000093634026000062/dte-20260312.htm"
+    }
+  ]
+}

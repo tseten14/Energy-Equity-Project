@@ -1,0 +1,24 @@
+{
+  "description": "Customers physically disconnected for non-payment, by month, from DTE Electric Company and DTE Gas Company's quarterly reports in MPSC case U-18120 (Rule 460.151). All customer types.",
+  "reportingChange": "From 2025 the reporting template counts customers who lost both electric and gas service as 'combination'. Before 2025 those customers are included in the electric or gas counts.",
+  "quarters": [
+    {"quarter": "2022-Q1", "filing": "U-18120-0159", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/0688y000002t09bAAA", "electric": [17365, 19243, 22132], "gas": [812, 1157, 2659]},
+    {"quarter": "2022-Q2", "filing": "U-18120-0166", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/0688y000003oJ81AAE", "electric": [19431, 20641, 19887], "gas": [1450, 1911, 2118]},
+    {"quarter": "2022-Q3", "filing": "U-18120-0172", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/0688y000004x6gkAAA", "electric": [18108, 20476, 19640], "gas": [2071, 2075, 1600]},
+    {"quarter": "2022-Q4", "filing": "U-18120-0180", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/0688y000006mnFNAAY", "electric": [14515, 13359, 9183], "gas": [1417, 421, 525]},
+    {"quarter": "2023-Q1", "filing": "U-18120-0212", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/0688y00000C1RfLAAV", "electric": [18129, 8083, 15618], "gas": [852, 965, 745]},
+    {"quarter": "2023-Q2", "filing": "U-18120-0212", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/0688y00000C1RfLAAV", "electric": [17725, 13247, 21450], "gas": [1555, 1674, 1358]},
+    {"quarter": "2023-Q3", "filing": "U-18120-0212", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/0688y00000C1RfLAAV", "electric": [18841, 19887, 19451], "gas": [828, 503, 1217]},
+    {"quarter": "2023-Q4", "filing": "U-18120-0210", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/0688y00000BzysmAAB", "electric": [18027, 14285, 6362], "gas": [855, 930, 389]},
+    {"quarter": "2024-Q1", "filing": "U-18120-0219", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/0688y00000DXUIeAAP", "electric": [12139, 17649, 15626], "gas": [629, 1377, 1186]},
+    {"quarter": "2024-Q2", "filing": "U-18120-0227", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/068cs000004TzIsAAK", "electric": [16216, 23738, 16450], "gas": [1210, 1828, 1325]},
+    {"quarter": "2024-Q3", "filing": "U-18120-0232", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/068cs00000M2E2IAAV", "electric": [18630, 16191, 14232], "gas": [1993, 1761, 1650]},
+    {"quarter": "2024-Q4", "filing": "U-18120-0246", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/068cs00000edv2jAAA", "electric": [22805, 15108, 6625], "gas": [1789, 948, 542]},
+    {"quarter": "2025-Q1", "filing": "U-18120-0249", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/068cs00000p0yDPAAY", "electric": [13222, 10162, 14916], "gas": [463, 780, 949], "combination": [987, 1156, 1281]},
+    {"quarter": "2025-Q2", "filing": "U-18120-0259", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/068cs0000144wsHAAQ", "electric": [13670, 18369, 17155], "gas": [1047, 843, 799], "combination": [1827, 2203, 1384]},
+    {"quarter": "2025-Q3", "filing": "U-18120-0270", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/068cs00001PVmCqAAL", "electric": [25944, 21484, 26940], "gas": [1329, 802, 1434], "combination": [2156, 1936, 2331]},
+    {"quarter": "2025-Q4", "filing": "U-18120-0286", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/068cs00001j4FZAAA2", "electric": [28510, 16303, 12245], "gas": [1461, 490, 267], "combination": [1431, 924, 655]},
+    {"quarter": "2026-Q1", "filing": "U-18120-0290", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/068cs00002182UTAAY", "electric": [9256, 23394, 15869], "gas": [372, 511, 504], "combination": [364, 1444, 515]},
+    {"quarter": "2026-Q2", "filing": "U-18120-0301", "url": "https://mi-psc.my.site.com/sfc/servlet.shepherd/version/download/068cs00002Lqb3HAAR", "electric": [18657, 24137, 16948], "gas": [1378, 884, 278], "combination": [978, 1056, 435]}
+  ]
+}
