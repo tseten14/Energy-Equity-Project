@@ -24,6 +24,9 @@ dist-ssr
 # Seed download cache
 scripts/seed/.cache/
 
+# Community uploads saved by the local server
+.data/
+
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars

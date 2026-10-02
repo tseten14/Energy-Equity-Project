@@ -1,5 +1,8 @@
 import "@tanstack/react-start/server-only";
 
+import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+
 import { getRequestHeader, getRequestIP } from "@tanstack/react-start/server";
 
 import { FINANCIAL_OPTIONS, HOUSEHOLD_OPTIONS } from "@/data/compare";
@@ -11,14 +14,14 @@ import type { DatasetProfile } from "@/lib/ingest/profile";
 import type { RelateContext, ReferenceSeries } from "@/lib/ingest/relate";
 
 import type { AiSummary } from "./ai-insights";
-import type { Json } from "./database.types";
-import { requireEnv } from "./env";
 import { fetchMeasures, fetchObservations } from "./measures";
-import { getSupabase } from "./supabase";
 
 export const UPLOADS_PER_HOUR = 10;
-const ROW_CHUNK = 1000;
 const PREVIEW_ROWS = 50;
+const HOUR = 60 * 60 * 1000;
+
+/** Uploads live outside the source tree and are git-ignored. */
+const UPLOADS_DIR = join(process.cwd(), ".data", "uploads");
 
 const REFERENCES = [
   ...Object.values(HOUSEHOLD_OPTIONS),
@@ -28,136 +31,43 @@ const REFERENCES = [
   ...Object.values(FINANCIAL_OPTIONS),
 ] as const satisfies readonly { measure: MeasureSlug; dimension: string; label: string }[];
 
-let cached: { at: number; value: Promise<{ ctx: RelateContext; measures: Measure[] }> } | undefined;
+let context: Promise<{ ctx: RelateContext; measures: Measure[] }> | undefined;
 
-/** The site's own series that uploads are related to. Cached because they only change on a re-seed. */
+/** The site's own series that uploads are related to. Built once, since the snapshot is fixed. */
 export function loadRelateContext(): Promise<{ ctx: RelateContext; measures: Measure[] }> {
-  if (!cached || Date.now() - cached.at > 60 * 60 * 1000) {
-    const value = (async () => {
-      const [measures, tracts, ...series] = await Promise.all([
-        fetchMeasures(MEASURE_SLUGS),
-        fetchObservations("energy_burden", { geo: "any" }),
-        ...REFERENCES.map((r) =>
-          fetchObservations(r.measure, { dimension: r.dimension, geo: "none" }),
-        ),
-      ]);
-      const yearly: ReferenceSeries[] = REFERENCES.map((r, i) => ({
-        measure: r.measure,
-        label: r.label,
-        points: toYearly(series[i] ?? [], measures.get(r.measure)?.annualAgg ?? "sum"),
-      }));
-      return {
-        ctx: { yearly, tractBurden: Object.fromEntries(tracts.map((o) => [o.geoId, o.value])) },
-        measures: [...measures.values()],
-      };
-    })();
-    cached = { at: Date.now(), value };
-    value.catch(() => (cached = undefined));
-  }
-  return cached.value;
+  context ??= (async () => {
+    const [measures, tracts, ...series] = await Promise.all([
+      fetchMeasures(MEASURE_SLUGS),
+      fetchObservations("energy_burden", { geo: "any" }),
+      ...REFERENCES.map((r) =>
+        fetchObservations(r.measure, { dimension: r.dimension, geo: "none" }),
+      ),
+    ]);
+    const yearly: ReferenceSeries[] = REFERENCES.map((r, i) => ({
+      measure: r.measure,
+      label: r.label,
+      points: toYearly(series[i] ?? [], measures.get(r.measure)?.annualAgg ?? "sum"),
+    }));
+    return {
+      ctx: { yearly, tractBurden: Object.fromEntries(tracts.map((o) => [o.geoId, o.value])) },
+      measures: [...measures.values()],
+    };
+  })();
+  return context;
 }
 
-/**
- * A keyed hash of the uploader's IP, used only for rate limiting. Keying it with a server secret means the
- * stored value cannot be reversed by hashing every possible IPv4 address.
- */
-export async function uploaderHash(): Promise<string> {
+/** Upload times per client IP. Held in memory only, so no IP address is ever written to disk. */
+const uploadTimes = new Map<string, number[]>();
+
+/** Records an upload for the current client, or returns false if it is over the hourly limit. */
+export function claimUploadSlot(): boolean {
   const ip =
     getRequestHeader("cf-connecting-ip") ?? getRequestIP({ xForwardedFor: true }) ?? "unknown";
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(requireEnv("SUPABASE_SECRET_KEY")),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(`upload:${ip}`));
-  return [...new Uint8Array(signature)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-export async function recentUploadCount(hash: string): Promise<number> {
-  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  const { count, error } = await getSupabase()
-    .from("datasets")
-    .select("id", { count: "exact", head: true })
-    .eq("uploader_hash", hash)
-    .gte("created_at", since);
-  if (error) throw new Error(`Could not check upload limit: ${error.message}`);
-  return count ?? 0;
-}
-
-const json = (value: unknown) => value as Json;
-
-interface NewDataset {
-  name: string;
-  fileName: string;
-  format: DatasetFormat;
-  rows: Cell[][];
-  profile: DatasetProfile;
-  insights: ComputedInsight[];
-  summary: AiSummary | null;
-  uploaderHash: string;
-}
-
-/** Saves a dataset with its rows and insights. Nothing is left behind if any step fails. */
-export async function storeDataset(input: NewDataset): Promise<string> {
-  const supabase = getSupabase();
-  const { data: dataset, error } = await supabase
-    .from("datasets")
-    .insert({
-      name: input.name,
-      file_name: input.fileName,
-      format: input.format,
-      row_count: input.rows.length,
-      profile: json(input.profile),
-      uploader_hash: input.uploaderHash,
-    })
-    .select("id")
-    .single();
-  if (error) throw new Error(`Could not save dataset: ${error.message}`);
-
-  try {
-    for (let start = 0; start < input.rows.length; start += ROW_CHUNK) {
-      const chunk = input.rows.slice(start, start + ROW_CHUNK).map((row, i) => ({
-        dataset_id: dataset.id,
-        row_number: start + i,
-        data: json(row),
-      }));
-      const { error: rowError } = await supabase.from("dataset_rows").insert(chunk);
-      if (rowError) throw new Error(`Could not save rows: ${rowError.message}`);
-    }
-
-    const ai = input.summary
-      ? [
-          {
-            kind: "ai",
-            title: input.summary.headline,
-            body: input.summary.bullets.join("\n"),
-            related_measure: input.summary.relatedMeasure,
-            stats: json({ caveats: input.summary.caveats } satisfies InsightStats),
-          },
-        ]
-      : [];
-    const insights = [
-      ...ai,
-      ...input.insights.map((i) => ({
-        kind: i.kind,
-        title: i.title,
-        body: i.body,
-        related_measure: i.relatedMeasure,
-        stats: json(i.stats),
-      })),
-    ].map((row, position) => ({ ...row, position, dataset_id: dataset.id }));
-    if (insights.length) {
-      const { error: insightError } = await supabase.from("insights").insert(insights);
-      if (insightError) throw new Error(`Could not save insights: ${insightError.message}`);
-    }
-  } catch (cause) {
-    await supabase.from("datasets").delete().eq("id", dataset.id);
-    throw cause;
-  }
-  return dataset.id;
+  const now = Date.now();
+  const recent = (uploadTimes.get(ip) ?? []).filter((t) => now - t < HOUR);
+  if (recent.length >= UPLOADS_PER_HOUR) return false;
+  uploadTimes.set(ip, [...recent, now]);
+  return true;
 }
 
 export interface DatasetSummary {
@@ -185,78 +95,91 @@ export interface DatasetDetail extends DatasetSummary {
   preview: { columns: string[]; rows: Cell[][] };
 }
 
-interface DatasetRow {
-  id: string;
+interface NewDataset {
   name: string;
-  file_name: string;
-  format: string;
-  row_count: number;
-  created_at: string;
-  profile: Json;
+  fileName: string;
+  format: DatasetFormat;
+  rows: Cell[][];
+  profile: DatasetProfile;
+  insights: ComputedInsight[];
+  summary: AiSummary | null;
 }
 
-function toSummary(row: DatasetRow): DatasetSummary {
-  const profile = row.profile as unknown as DatasetProfile;
-  return {
-    id: row.id,
-    name: row.name,
-    fileName: row.file_name,
-    format: row.format as DatasetFormat,
-    rowCount: row.row_count,
-    columnCount: profile.columns.length,
-    createdAt: row.created_at,
+const detailPath = (id: string) => join(UPLOADS_DIR, `${id}.json`);
+const rowsPath = (id: string) => join(UPLOADS_DIR, `${id}.rows.json`);
+
+/** Saves a dataset with its rows and insights. Nothing is left behind if any step fails. */
+export async function storeDataset(input: NewDataset): Promise<string> {
+  const id = crypto.randomUUID();
+  const ai: Omit<StoredInsight, "id">[] = input.summary
+    ? [
+        {
+          kind: "ai",
+          title: input.summary.headline,
+          body: input.summary.bullets.join("\n"),
+          relatedMeasure: input.summary.relatedMeasure,
+          stats: { caveats: input.summary.caveats },
+        },
+      ]
+    : [];
+  const detail: DatasetDetail = {
+    id,
+    name: input.name,
+    fileName: input.fileName,
+    format: input.format,
+    rowCount: input.rows.length,
+    columnCount: input.profile.columns.length,
+    createdAt: new Date().toISOString(),
+    profile: input.profile,
+    insights: [...ai, ...input.insights].map((insight, position) => ({
+      id: `${id}-${position}`,
+      kind: insight.kind,
+      title: insight.title,
+      body: insight.body,
+      relatedMeasure: insight.relatedMeasure,
+      stats: insight.stats,
+    })),
+    preview: {
+      columns: input.profile.columns.map((c) => c.name),
+      rows: input.rows.slice(0, PREVIEW_ROWS),
+    },
   };
+
+  await mkdir(UPLOADS_DIR, { recursive: true });
+  try {
+    // The detail file goes last: a dataset only appears in listings once its rows are saved.
+    await writeFile(rowsPath(id), JSON.stringify(input.rows));
+    await writeFile(detailPath(id), JSON.stringify(detail));
+  } catch (cause) {
+    await Promise.all([rm(rowsPath(id), { force: true }), rm(detailPath(id), { force: true })]);
+    throw cause;
+  }
+  return id;
+}
+
+async function readDetail(path: string): Promise<DatasetDetail | null> {
+  try {
+    return JSON.parse(await readFile(path, "utf8")) as DatasetDetail;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
+  }
 }
 
 export async function fetchRecentDatasets(limit = 12): Promise<DatasetSummary[]> {
-  const { data, error } = await getSupabase()
-    .from("datasets")
-    .select("id, name, file_name, format, row_count, created_at, profile")
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  if (error) throw new Error(`Could not load uploads: ${error.message}`);
-  return data.map(toSummary);
+  const files = await readdir(UPLOADS_DIR).catch(() => [] as string[]);
+  const details = await Promise.all(
+    files
+      .filter((f) => f.endsWith(".json") && !f.endsWith(".rows.json"))
+      .map((f) => readDetail(join(UPLOADS_DIR, f))),
+  );
+  return details
+    .filter((d): d is DatasetDetail => d !== null)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, limit)
+    .map(({ profile: _p, insights: _i, preview: _r, ...summary }) => summary);
 }
 
-export async function fetchDataset(id: string): Promise<DatasetDetail | null> {
-  const supabase = getSupabase();
-  const [dataset, insights, rows] = await Promise.all([
-    supabase
-      .from("datasets")
-      .select("id, name, file_name, format, row_count, created_at, profile")
-      .eq("id", id)
-      .maybeSingle(),
-    supabase
-      .from("insights")
-      .select("id, kind, title, body, related_measure, stats")
-      .eq("dataset_id", id)
-      .order("position"),
-    supabase
-      .from("dataset_rows")
-      .select("data")
-      .eq("dataset_id", id)
-      .order("row_number")
-      .limit(PREVIEW_ROWS),
-  ]);
-  const failed = dataset.error ?? insights.error ?? rows.error;
-  if (failed) throw new Error(`Could not load dataset: ${failed.message}`);
-  if (!dataset.data) return null;
-
-  const profile = dataset.data.profile as unknown as DatasetProfile;
-  return {
-    ...toSummary(dataset.data),
-    profile,
-    insights: (insights.data ?? []).map((i) => ({
-      id: i.id,
-      kind: i.kind as StoredInsight["kind"],
-      title: i.title,
-      body: i.body,
-      relatedMeasure: i.related_measure as MeasureSlug | null,
-      stats: i.stats as InsightStats | null,
-    })),
-    preview: {
-      columns: profile.columns.map((c) => c.name),
-      rows: (rows.data ?? []).map((r) => r.data as Cell[]),
-    },
-  };
+export function fetchDataset(id: string): Promise<DatasetDetail | null> {
+  return readDetail(detailPath(id));
 }

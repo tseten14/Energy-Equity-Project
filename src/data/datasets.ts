@@ -6,12 +6,11 @@ import { analyzeDataset } from "@/lib/ingest/relate";
 import { summarizeDataset } from "@/server/ai-insights";
 import {
   UPLOADS_PER_HOUR,
+  claimUploadSlot,
   fetchDataset,
   fetchRecentDatasets,
   loadRelateContext,
-  recentUploadCount,
   storeDataset,
-  uploaderHash,
 } from "@/server/datasets";
 
 export type { DatasetDetail, DatasetSummary, StoredInsight } from "@/server/datasets";
@@ -51,8 +50,7 @@ export const ingestInput = z
 export const ingestDataset = createServerFn({ method: "POST" })
   .validator(ingestInput)
   .handler(async ({ data }): Promise<{ id: string }> => {
-    const hash = await uploaderHash();
-    if ((await recentUploadCount(hash)) >= UPLOADS_PER_HOUR) {
+    if (!claimUploadSlot()) {
       throw new Error(`You can upload ${UPLOADS_PER_HOUR} files an hour. Please try again later.`);
     }
 
@@ -75,7 +73,6 @@ export const ingestDataset = createServerFn({ method: "POST" })
       profile,
       insights,
       summary,
-      uploaderHash: hash,
     });
     return { id };
   });
