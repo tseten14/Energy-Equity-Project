@@ -11,9 +11,13 @@ export function SiteHeader() {
     <header className="border-b-2 border-border">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8">
         <Link to="/" className="flex items-center gap-3">
-          <span className="grid size-9 place-items-center rounded-full bg-primary font-display text-lg font-semibold text-primary-foreground">
-            D
-          </span>
+          <img
+            src="/energy-equity-project-logo.png"
+            alt="Energy Equity Project"
+            width={48}
+            height={48}
+            className="size-12 object-contain"
+          />
           <span className="leading-tight">
             <span className="block font-display text-lg font-semibold">DTE, in Plain Terms</span>
             <span className="block text-xs text-foreground/55">
