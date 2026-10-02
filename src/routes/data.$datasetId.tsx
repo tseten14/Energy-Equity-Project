@@ -23,7 +23,7 @@ export const Route = createFileRoute("/data/$datasetId")({
     return { name: dataset.name };
   },
   head: ({ loaderData }) => {
-    const title = `${loaderData?.name ?? "Uploaded dataset"} — community upload | DTE, in Plain Terms`;
+    const title = `${loaderData?.name ?? "Uploaded dataset"} — community upload | Energy Equity Report`;
     return {
       meta: [
         { title },

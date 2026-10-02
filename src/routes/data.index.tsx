@@ -19,7 +19,7 @@ import {
 } from "../lib/ingest/parse";
 import { cn } from "../lib/utils";
 
-const title = "Your data — upload a file and see how it relates | DTE, in Plain Terms";
+const title = "Your data — upload a file and see how it relates | Energy Equity Report";
 const description =
   "Upload a CSV, Excel or JSON file. We describe what's in it and show how it lines up with verified data on DTE customers and finances.";
 

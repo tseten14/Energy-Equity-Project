@@ -10,7 +10,7 @@ import type { MeasureSlug } from "../data/types";
 import { citation } from "../lib/citation";
 import { formatBillions, formatChange, formatPeriod, formatValue } from "../lib/format";
 
-const title = "DTE Financials — company value, dividends and executive pay | DTE, in Plain Terms";
+const title = "DTE Financials — company value, dividends and executive pay | Energy Equity Report";
 const description =
   "DTE's estimated market capitalization, total cash dividends, revenue growth and executive pay, explained in everyday language.";
 

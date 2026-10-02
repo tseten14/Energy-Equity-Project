@@ -19,7 +19,7 @@ export function SiteHeader() {
             className="size-12 object-contain"
           />
           <span className="leading-tight">
-            <span className="block font-display text-lg font-semibold">DTE, in Plain Terms</span>
+            <span className="block font-display text-lg font-semibold">Energy Equity Report</span>
             <span className="block text-xs text-foreground/55">
               A public-interest look at bills, shutoffs &amp; company pay
             </span>

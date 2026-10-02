@@ -17,7 +17,7 @@ import { citation } from "../lib/citation";
 import { formatMonthShort, formatValue } from "../lib/format";
 import { cn } from "../lib/utils";
 
-const title = "Household Experience — what DTE customers pay | DTE, in Plain Terms";
+const title = "Household Experience — what DTE customers pay | Energy Equity Report";
 const description =
   "Michigan statewide energy insecurity, energy burden in DTE's service-area geography, and DTE's electric and gas shutoffs and prices.";
 
