@@ -22,6 +22,11 @@ const compactDollars = new Intl.NumberFormat("en-US", {
 
 const decimals = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
+/** Company-wide dollar totals on the financial page, including totals below $1 billion. */
+export function formatBillions(value: number): string {
+  return `$${(value / 1e9).toFixed(Math.abs(value) < 1e9 ? 2 : 1)}B`;
+}
+
 /** For numbers whose unit is unknown, such as values in an uploaded file. */
 export function formatNumber(value: number): string {
   const abs = Math.abs(value);

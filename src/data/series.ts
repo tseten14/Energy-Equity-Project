@@ -1,6 +1,6 @@
 /**
  * Turns observations into yearly points and measures how two yearly series move together.
- * Used by the Compare page and by upload analysis.
+ * Used by the landing-page findings and upload analysis.
  */
 import type { AnnualAgg, Grain, Observation, YearPoint } from "./types";
 

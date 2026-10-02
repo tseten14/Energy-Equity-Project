@@ -1,16 +1,16 @@
-/** Home page. Four sourced headline figures, each linking to the page that explains it. */
+/** The opening Compare overview: sourced household and company findings beside further reading. */
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { SourceLine } from "../components/data-card";
-import type { Headlines } from "../data/measures";
-import { headlinesQuery } from "../data/queries";
+import { SectionIntro, SourceLine } from "../components/data-card";
+import { DTE_ARTICLES } from "../data/articles";
+import type { OverviewFinding } from "../data/measures";
+import { overviewQuery } from "../data/queries";
 import { citation } from "../lib/citation";
-import { formatValue } from "../lib/format";
 
-const title = "DTE, in Plain Terms — household energy costs and company finances";
+const title = "Compare household experience and DTE finances | DTE, in Plain Terms";
 const description =
-  "A plain-language comparison of what DTE customers pay and experience with DTE's prices and company financials, plus Michigan statewide energy insecurity as context.";
+  "The most important sourced findings on Michigan household energy insecurity and DTE's finances, with five articles for further reading.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -21,141 +21,102 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: description },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(headlinesQuery()),
-  component: Home,
+  loader: ({ context }) => context.queryClient.ensureQueryData(overviewQuery()),
+  component: CompareOverview,
 });
 
-function Home() {
-  const { data } = useSuspenseQuery(headlinesQuery());
-
+function FindingGroup({
+  title: groupTitle,
+  findings,
+  to,
+}: {
+  title: string;
+  findings: OverviewFinding[];
+  to: "/household" | "/financials";
+}) {
   return (
-    <section className="py-16 sm:py-24">
-      <div className="mx-auto max-w-6xl px-5 sm:px-8">
-        <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-16">
-          <div className="lg:col-span-7">
-            <span className="inline-block rounded-full bg-amber/25 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em]">
-              Civic data, explained
-            </span>
-            <h1 className="mt-6 max-w-[20ch] text-balance font-display text-5xl font-semibold leading-none sm:text-6xl lg:text-7xl">
-              What your utility bill says about the company behind it.
-            </h1>
-            <p className="mt-6 max-w-[52ch] text-pretty text-lg text-foreground/70">
-              We compare what Michigan households actually pay and experience — energy burden,
-              electric and gas shutoffs — against the utility's own financials. No jargon. Every
-              number is sourced, dated, and defined in plain English.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                to="/household"
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 text-base font-semibold text-primary-foreground ring-2 ring-primary/30"
-              >
-                Explore household data
-                <span aria-hidden="true" className="text-lg leading-none">
-                  &rarr;
-                </span>
-              </Link>
-              <Link
-                to="/compare"
-                className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-base font-semibold ring-2 ring-border"
-              >
-                Compare the two sides
-              </Link>
-            </div>
-            <p className="mt-6 max-w-[50ch] text-sm text-foreground/55">
-              The figures come from federal agencies, the Michigan Public Service Commission and
-              DTE's own filings. Have a dataset of your own?{" "}
-              <Link to="/data" className="font-semibold text-primary underline underline-offset-2">
-                Upload it
-              </Link>{" "}
-              and see how it relates.
-            </p>
-          </div>
-
-          <div className="lg:col-span-5">
-            <div className="rounded-2xl bg-cream p-6 ring-1 ring-border">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-foreground/50">
-                How to read this site
-              </p>
-              <ul className="mt-4 space-y-4">
-                <li className="flex gap-3">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/15 font-display font-semibold text-primary">
-                    1
-                  </span>
-                  <p className="pt-1 text-sm text-foreground/75">
-                    Each chart has a plain title, a one-line takeaway, and a source with year.
-                  </p>
-                </li>
-                <li className="flex gap-3">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent/15 font-display font-semibold text-accent">
-                    2
-                  </span>
-                  <p className="pt-1 text-sm text-foreground/75">
-                    Terms you might not know are defined right where they appear.
-                  </p>
-                </li>
-                <li className="flex gap-3">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-amber/25 font-display font-semibold">
-                    3
-                  </span>
-                  <p className="pt-1 text-sm text-foreground/75">
-                    Where data is missing, we say so — we never guess or invent numbers.
-                  </p>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <HeadlineStrip data={data} />
+    <section className="rounded-2xl bg-paper p-6 ring-1 ring-border sm:p-8">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
+        <h3 className="font-display text-2xl font-semibold">{groupTitle}</h3>
+        <Link
+          to={to}
+          className="text-sm font-semibold text-secondary-foreground underline underline-offset-2"
+        >
+          Explore the data
+        </Link>
       </div>
+      <ul className="mt-5 space-y-5">
+        {findings.map((finding) => (
+          <li key={finding.label} className="border-l-4 border-primary pl-4">
+            <p className="font-display text-2xl font-semibold tabular-nums text-foreground">
+              {finding.value}
+            </p>
+            <p className="mt-1 text-sm font-semibold">{finding.label}</p>
+            <p className="mt-1 text-xs text-foreground/70">{finding.detail}</p>
+            <SourceLine {...citation(finding.measure)} />
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
 
-function HeadlineStrip({ data }: { data: Headlines }) {
-  const { burden, price, shutoffs, ceoPay } = data;
-  const priceRise = ((price.latest.value - price.first.value) / price.first.value) * 100;
-
-  const stats = [
-    {
-      value: formatValue(burden.veryLow, "percent"),
-      text: `of income goes to home energy for very low-income households in DTE's area, against ${formatValue(burden.overall, "percent")} for all households.`,
-      to: "/household" as const,
-      measure: burden.measure,
-    },
-    {
-      value: formatValue(price.latest.value, "cents_per_kwh"),
-      text: `per kilowatt-hour paid by homes in ${price.latest.year}, up ${Math.round(priceRise)}% since ${price.first.year}.`,
-      to: "/household" as const,
-      measure: price.measure,
-    },
-    {
-      value: formatValue(shutoffs.total, "count"),
-      text: `electric and gas shutoffs for nonpayment in ${shutoffs.year}.`,
-      to: "/household" as const,
-      measure: shutoffs.measure,
-    },
-    {
-      value: formatValue(ceoPay.latest.value, "usd"),
-      text: `in total pay for DTE's CEO in ${ceoPay.latest.year}.`,
-      to: "/financials" as const,
-      measure: ceoPay.measure,
-    },
-  ];
+function CompareOverview() {
+  const { data } = useSuspenseQuery(overviewQuery());
 
   return (
-    <div className="mt-16 grid gap-px overflow-hidden rounded-2xl bg-border ring-1 ring-border sm:grid-cols-2 lg:grid-cols-4">
-      {stats.map((s) => (
-        <div key={s.measure.slug} className="flex flex-col bg-paper p-6">
-          <Link to={s.to} className="group">
-            <p className="font-display text-4xl font-semibold tabular-nums group-hover:text-primary">
-              {s.value}
+    <div className="bg-cream/60 py-16 sm:py-20">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <SectionIntro
+          eyebrow="Compare"
+          title="What households experience. What DTE reports."
+          lead="A short guide to the figures behind energy affordability and DTE's finances, with reporting that adds context."
+        />
+        <p className="mt-6 max-w-[75ch] rounded-xl bg-highlight px-5 py-4 text-sm font-medium text-highlight-foreground">
+          Scope matters: energy insecurity describes Michigan statewide across all utilities. Energy
+          burden describes households in DTE's service-area geography. Shutoffs and electricity
+          prices are DTE-reported figures.
+        </p>
+
+        <div className="mt-10 grid items-start gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+          <div className="space-y-6">
+            <FindingGroup title="Household experience" findings={data.household} to="/household" />
+            <FindingGroup title="DTE financials" findings={data.financial} to="/financials" />
+          </div>
+          <aside
+            className="rounded-2xl bg-paper p-6 ring-1 ring-border sm:p-8"
+            aria-labelledby="articles-heading"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-secondary-foreground">
+              Further reading
             </p>
-            <p className="mt-2 text-sm text-foreground/70">{s.text}</p>
-          </Link>
-          <SourceLine {...citation(s.measure)} className="mt-auto pt-3" />
+            <h3 id="articles-heading" className="mt-2 font-display text-2xl font-semibold">
+              Five DTE articles to know
+            </h3>
+            <ol className="mt-6 space-y-6">
+              {DTE_ARTICLES.map((article, index) => (
+                <li
+                  key={article.url}
+                  className="border-t border-border pt-5 first:border-0 first:pt-0"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-foreground/65">
+                    {index + 1}. {article.publisher} · {article.date}
+                  </p>
+                  <a
+                    href={article.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 block font-display text-lg font-semibold leading-snug text-secondary-foreground underline decoration-transparent underline-offset-4 hover:decoration-current"
+                  >
+                    {article.title}
+                  </a>
+                  <p className="mt-2 text-sm text-foreground/75">{article.description}</p>
+                </li>
+              ))}
+            </ol>
+          </aside>
         </div>
-      ))}
+      </div>
     </div>
   );
 }

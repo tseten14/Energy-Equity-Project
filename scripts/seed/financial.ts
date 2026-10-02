@@ -1,9 +1,10 @@
 /**
- * Dividends and revenue growth from the SEC company-facts API, month-end stock price from Yahoo,
+ * Company financials from SEC company facts, month-end share prices from Yahoo,
  * and CEO total pay from the transcribed proxy-statement file.
  */
 import { readFileSync } from "node:fs";
 
+import { marketCapForMonth, type ShareCount } from "../../src/data/market-cap";
 import {
   fetchJson,
   monthPeriod,
@@ -29,6 +30,23 @@ interface CompanyFacts {
   facts: { "us-gaap": Record<string, { units: Record<string, XbrlFact[]> }> };
 }
 
+/** DTE Energy shares at each reported quarter end, never a future share count. */
+function reportedShares(facts: CompanyFacts): ShareCount[] {
+  const best = new Map<string, XbrlFact>();
+  for (const fact of facts.facts["us-gaap"]["CommonStockSharesOutstanding"]?.units["shares"] ??
+    []) {
+    if (!["10-K", "10-Q"].includes(fact.form) || fact.start || fact.val <= 0) continue;
+    const current = best.get(fact.end);
+    if (!current || fact.filed > current.filed) best.set(fact.end, fact);
+  }
+  return [...best]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([end, fact]) => ({
+      end,
+      value: fact.val,
+    }));
+}
+
 /** One value per calendar year from 10-K full-year facts, preferring the most recent filing. */
 function annualFacts(facts: CompanyFacts, tags: string[], unit: string): Map<number, number> {
   const best = new Map<number, XbrlFact>();
@@ -49,10 +67,14 @@ function annualFacts(facts: CompanyFacts, tags: string[], unit: string): Map<num
   return new Map([...best].sort(([a], [b]) => a - b).map(([year, fact]) => [year, fact.val]));
 }
 
-async function secObservations(): Promise<ObservationSeed[]> {
+async function secObservations(): Promise<{
+  observations: ObservationSeed[];
+  shares: ShareCount[];
+}> {
   const facts = await fetchJson<CompanyFacts>(COMPANY_FACTS_URL);
 
   const dividends = annualFacts(facts, ["CommonStockDividendsPerShareDeclared"], "USD/shares");
+  const paid = annualFacts(facts, ["PaymentsOfDividendsCommonStock"], "USD");
   // DTE reported total operating revenue under "Revenues" through 2017 and the regulated-plus-unregulated tag since.
   const revenue = annualFacts(
     facts,
@@ -66,6 +88,14 @@ async function secObservations(): Promise<ObservationSeed[]> {
     grain: "year",
     value,
   }));
+  observations.push(
+    ...[...paid].map(([year, value]) => ({
+      measureSlug: "dividends_paid" as const,
+      period: yearPeriod(year),
+      grain: "year" as const,
+      value,
+    })),
+  );
 
   for (const [year, value] of revenue) {
     const previous = revenue.get(year - 1);
@@ -77,7 +107,7 @@ async function secObservations(): Promise<ObservationSeed[]> {
       value: round((value / previous - 1) * 100, 1),
     });
   }
-  return observations;
+  return { observations, shares: reportedShares(facts) };
 }
 
 interface YahooChart {
@@ -112,6 +142,24 @@ async function stockPriceObservations(): Promise<ObservationSeed[]> {
   });
 }
 
+/** Market capitalization is the share price times the most recent reported share count. */
+function marketCapObservations(prices: ObservationSeed[], shares: ShareCount[]): ObservationSeed[] {
+  return prices.flatMap(({ period, value }) => {
+    const estimate = marketCapForMonth(period, value, shares);
+    return estimate
+      ? [
+          {
+            measureSlug: "market_cap",
+            period,
+            grain: "month",
+            dimension: estimate.sharesAsOf,
+            value: estimate.value,
+          } satisfies ObservationSeed,
+        ]
+      : [];
+  });
+}
+
 interface CeoPayFile {
   executive: string;
   years: { year: number; total: number; filing: string }[];
@@ -131,8 +179,9 @@ function ceoPayObservations(): ObservationSeed[] {
 
 export async function financialBundle(): Promise<SeedBundle> {
   const [sec, stock] = await Promise.all([secObservations(), stockPriceObservations()]);
+  const marketCap = marketCapObservations(stock, sec.shares);
   const ceo = ceoPayObservations();
-  const years = (rows: ObservationSeed[]) => {
+  const years = (rows: { period: string }[]) => {
     const all = rows.map((r) => Number(r.period.slice(0, 4)));
     return `${Math.min(...all)}–${Math.max(...all)}`;
   };
@@ -143,9 +192,9 @@ export async function financialBundle(): Promise<SeedBundle> {
       {
         slug: "sec-xbrl",
         publisher: "U.S. Securities and Exchange Commission",
-        title: "DTE Energy Co. 10-K financial data (XBRL company facts)",
+        title: "DTE Energy Co. 10-K and 10-Q financial data (XBRL company facts)",
         url: COMPANY_FACTS_URL,
-        dataYear: years(sec),
+        dataYear: years([...sec.observations, ...sec.shares.map((row) => ({ period: row.end }))]),
       },
       {
         slug: "yahoo-dte",
@@ -183,6 +232,27 @@ export async function financialBundle(): Promise<SeedBundle> {
         sourceSlug: "sec-xbrl",
       },
       {
+        slug: "market_cap",
+        side: "financial",
+        label: "Market capitalization",
+        unit: "usd",
+        definition:
+          "Estimated value of all DTE Energy shares at month end: closing share price multiplied by the latest reported shares outstanding. It is not the value of DTE's assets or its sale price.",
+        annualAgg: "last",
+        sourceSlug: "yahoo-dte",
+        additionalSourceSlugs: ["sec-xbrl"],
+      },
+      {
+        slug: "dividends_paid",
+        side: "financial",
+        label: "Cash dividends paid",
+        unit: "usd",
+        definition:
+          "Total cash DTE Energy paid to all common shareholders during the year, as reported in its annual cash-flow statement.",
+        annualAgg: "sum",
+        sourceSlug: "sec-xbrl",
+      },
+      {
         slug: "revenue_growth",
         side: "financial",
         label: "Growth rate",
@@ -198,11 +268,11 @@ export async function financialBundle(): Promise<SeedBundle> {
         label: "Executive pay",
         unit: "usd",
         definition:
-          "Total yearly pay for Jerry Norcia, DTE's CEO from July 2019 to September 2025: salary, stock awards, bonuses, pension changes and other compensation.",
+          "Total yearly compensation for DTE's CEO named in its proxy statement: salary, stock awards, bonuses, pension changes and other compensation.",
         annualAgg: "sum",
         sourceSlug: "dte-proxy",
       },
     ],
-    observations: [...sec, ...stock, ...ceo],
+    observations: [...sec.observations, ...stock, ...marketCap, ...ceo],
   };
 }

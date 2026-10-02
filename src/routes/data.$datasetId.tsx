@@ -123,7 +123,7 @@ function Header({ dataset }: { dataset: DatasetDetail }) {
       >
         ← All uploads
       </Link>
-      <p className="mt-6 inline-block rounded-full bg-amber/30 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-foreground/70">
+      <p className="mt-6 inline-block rounded-full bg-highlight/30 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-foreground/70">
         Community upload · unverified
       </p>
       <h1 className="mt-4 text-balance text-4xl leading-tight sm:text-5xl">{dataset.name}</h1>

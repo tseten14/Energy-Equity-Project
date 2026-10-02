@@ -1,5 +1,5 @@
 /**
- * Household page: tract map, burden by income, shutoffs by year, and electricity prices.
+ * Household page: Michigan energy insecurity, area burden, DTE shutoffs, and prices.
  * The year buttons filter shutoffs. The map toggle switches between all 22 counties and Metro Detroit.
  */
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -10,16 +10,16 @@ import { CategoryBars } from "../components/charts/category-bars";
 import { HIGH_BURDEN, TractMap } from "../components/charts/tract-map";
 import { TrendChart } from "../components/charts/trend-chart";
 import { DataCard, SectionIntro, SourceLine } from "../components/data-card";
-import { AMI_BANDS, CUSTOMER_CLASSES, type ShutoffService } from "../data/labels";
-import type { HouseholdData } from "../data/measures";
-import { householdQuery } from "../data/queries";
+import { AMI_BANDS, CUSTOMER_CLASSES, PULSE_INDICATORS, type ShutoffService } from "../data/labels";
+import type { HouseholdData, MichiganContext } from "../data/measures";
+import { householdQuery, michiganContextQuery } from "../data/queries";
 import { citation } from "../lib/citation";
 import { formatMonthShort, formatValue } from "../lib/format";
 import { cn } from "../lib/utils";
 
 const title = "Household Experience — what DTE customers pay | DTE, in Plain Terms";
 const description =
-  "Energy burden by census tract and income group across the DTE service area, plus electric and gas shutoffs shown separately.";
+  "Michigan statewide energy insecurity, energy burden in DTE's service-area geography, and DTE's electric and gas shutoffs and prices.";
 
 export const Route = createFileRoute("/household")({
   head: () => ({
@@ -30,7 +30,11 @@ export const Route = createFileRoute("/household")({
       { property: "og:description", content: description },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(householdQuery()),
+  loader: ({ context }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(householdQuery()),
+      context.queryClient.ensureQueryData(michiganContextQuery()),
+    ]),
   component: Household,
 });
 
@@ -38,6 +42,7 @@ const pct = (v: number) => formatValue(v, "percent");
 
 function Household() {
   const { data } = useSuspenseQuery(householdQuery());
+  const { data: michigan } = useSuspenseQuery(michiganContextQuery());
 
   return (
     <div className="bg-cream/60 py-16 sm:py-20">
@@ -45,9 +50,18 @@ function Household() {
         <SectionIntro
           eyebrow="Household Experience"
           title="What utility costs look like from the kitchen table."
-          lead="Energy burden is how much of a household's income goes to keeping the lights on and the heat running. Here's how it varies by income, and where shutoffs land."
+          lead="Start with the statewide picture of energy insecurity, then look at energy burden across DTE's service area and the prices and shutoffs DTE reports."
         />
 
+        <MichiganInsecurity context={michigan} />
+        <div className="mt-12 max-w-[70ch]">
+          <h2 className="font-display text-2xl font-semibold">Closer to DTE's service area</h2>
+          <p className="mt-2 text-sm text-foreground/70">
+            The energy-burden estimates describe households in places DTE Electric serves; they are
+            not limited to verified DTE customers. The shutoff and electricity-price figures below
+            are reported by DTE.
+          </p>
+        </div>
         <div className="mt-10 grid gap-6 lg:grid-cols-12">
           <div className="lg:col-span-7">
             <DataCard
@@ -73,6 +87,47 @@ function Household() {
         <CustomerClasses classes={data.classes} />
       </div>
     </div>
+  );
+}
+
+function MichiganInsecurity({ context }: { context: MichiganContext }) {
+  const indicators = PULSE_INDICATORS.flatMap((meta) => {
+    const row = context.indicators.find((indicator) => indicator.key === meta.key);
+    return row?.michigan == null ? [] : [{ ...meta, michigan: row.michigan, us: row.us }];
+  });
+
+  return (
+    <section
+      className="mt-10 rounded-2xl bg-accent p-6 text-accent-foreground sm:p-8"
+      aria-labelledby="insecurity-heading"
+    >
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-accent-foreground/75">
+        Michigan statewide · all utilities · 2024
+      </p>
+      <h2 id="insecurity-heading" className="mt-3 font-display text-2xl font-semibold">
+        Energy insecurity across Michigan
+      </h2>
+      <p className="mt-2 max-w-[70ch] text-sm text-accent-foreground/85">
+        These shares describe Michigan adults whose household had each experience at least once in
+        the previous 12 months. They are statewide survey results, not figures for DTE customers.
+      </p>
+      <div className="mt-6 grid gap-4 md:grid-cols-3">
+        {indicators.map((indicator) => (
+          <div key={indicator.key} className="rounded-xl bg-paper p-5 text-foreground">
+            <p className="font-display text-4xl font-semibold tabular-nums">
+              {formatValue(indicator.michigan, "percent")}
+            </p>
+            <p className="mt-2 text-sm font-medium">{indicator.label}</p>
+            {indicator.us != null ? (
+              <p className="mt-2 text-xs text-foreground/65">
+                U.S. comparison: {formatValue(indicator.us, "percent")}
+              </p>
+            ) : null}
+          </div>
+        ))}
+      </div>
+      <SourceLine {...citation(context.measure)} className="text-accent-foreground/75" />
+    </section>
   );
 }
 

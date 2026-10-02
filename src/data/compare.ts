@@ -1,6 +1,6 @@
 /**
- * The pairs a reader can put on the Compare page, and the yearly series an
- * upload is lined up against. Keys are the values stored in the page URL.
+ * Verified yearly series used to relate uploaded data to household and
+ * financial measures. The overview at / does not use these options.
  */
 import type { MeasureSlug } from "./types";
 
@@ -49,5 +49,5 @@ export const FINANCIAL_KEYS = Object.keys(FINANCIAL_OPTIONS) as [
   ...FinancialOption[],
 ];
 
-/** Overlapping years needed before a correlation is shown. */
+/** Overlapping years needed before upload analysis reports a correlation. */
 export const MIN_OVERLAP_YEARS = 4;

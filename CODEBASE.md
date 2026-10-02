@@ -33,7 +33,7 @@ The app is one TypeScript project. The browser and the server are the same React
 | Styles             | Tailwind CSS 4, via `@tailwindcss/vite`             | Tokens live in `src/styles.css`                                                             |
 | Charts             | Recharts 2.15                                       | Lines, bars, and sparklines                                                                 |
 | Map                | `d3-geo` and `topojson-client`                      | Census-tract map. Not a Python map library                                                  |
-| Validation         | Zod 3                                               | Upload payloads and the Compare page URL                                                    |
+| Validation         | Zod 3                                               | Upload payloads                                                                             |
 | Spreadsheets       | Papa Parse, SheetJS (`xlsx`)                        | CSV, TSV, JSON, NDJSON, and Excel uploads. Excel is imported only when a workbook is opened |
 | Optional summary   | Vercel AI SDK (`ai` 7)                              | One model call per upload, only if `AI_GATEWAY_API_KEY` is set                              |
 | Seed runner        | `tsx`                                               | `npm run seed` runs `scripts/seed/index.ts`                                                 |
@@ -50,7 +50,7 @@ Install and run with npm. Node is required. The commands are listed in the READM
 
 These packages are present because that kit imports them. The site's own pages do not call them: Radix primitives, `class-variance-authority`, `cmdk`, `vaul`, `sonner`, `embla-carousel-react`, `react-hook-form`, `react-day-picker`, `input-otp`, `date-fns`, and `lucide-react`.
 
-Icons on the real pages are not from an icon font. The header mark is the letter D.
+Icons on the real pages are not from an icon font. The header uses the Energy Equity Project logo.
 
 ## How a request is handled
 
@@ -128,16 +128,16 @@ Do not invent a missing year. Leave it blank.
 
 ## Charts
 
-| Component      | File                                      | Used for                                                                  |
-| -------------- | ----------------------------------------- | ------------------------------------------------------------------------- |
-| `TrendChart`   | `src/components/charts/trend-chart.tsx`   | Line and bar charts on Household, Financials, Compare, and upload results |
-| `Sparkline`    | `src/components/charts/sparkline.tsx`     | The small lines in the Financials summary cards                           |
-| `CategoryBars` | `src/components/charts/category-bars.tsx` | Energy burden by income. HTML bars, not Recharts                          |
-| `TractMap`     | `src/components/charts/tract-map.tsx`     | Household energy burden by census tract                                   |
+| Component      | File                                      | Used for                                                         |
+| -------------- | ----------------------------------------- | ---------------------------------------------------------------- |
+| `TrendChart`   | `src/components/charts/trend-chart.tsx`   | Line and bar charts on Household, Financials, and upload results |
+| `Sparkline`    | `src/components/charts/sparkline.tsx`     | The small lines in the Financials summary cards                  |
+| `CategoryBars` | `src/components/charts/category-bars.tsx` | Energy burden by income. HTML bars, not Recharts                 |
+| `TractMap`     | `src/components/charts/tract-map.tsx`     | Household energy burden by census tract                          |
 
 `TrendChart` passes axes to Recharts as an array. A React fragment is invisible to Recharts 2 under React 19, and the axes disappear. Keep that array.
 
-Chart colors are the `--chart-*` tokens in `src/styles.css`. Household series use the brick `--chart-1`. Company series use the teal `--chart-2`. The map uses `--chart-seq-1` through `--chart-seq-6`.
+Chart colors are the `--chart-*` tokens in `src/styles.css`. Household series use EEP red `--chart-1`. Company series use EEP blue `--chart-2`. The map uses `--chart-seq-1` through `--chart-seq-6`.
 
 `DataCard`, `SourceLine`, `SectionIntro`, and `MeasureCard` in `src/components/data-card.tsx` are the frame around a figure: title, one-line takeaway, chart, and source.
 
@@ -167,14 +167,14 @@ Those files work in `npm run dev` because the server is Node. The Cloudflare bui
 
 `scripts/seed/index.ts` runs the bundles and merges them into the snapshot. `--only=<bundle>` replaces just that bundle's measures.
 
-| File                        | Bundle                                                                                  |
-| --------------------------- | --------------------------------------------------------------------------------------- |
-| `scripts/seed/financial.ts` | SEC XBRL dividends and revenue growth, Yahoo month-end stock price, transcribed CEO pay |
-| `scripts/seed/eia861.ts`    | EIA-861 customer class totals and the service counties                                  |
-| `scripts/seed/shutoffs.ts`  | Reads `scripts/seed/data/dte-shutoffs.json`                                             |
-| `scripts/seed/lead.ts`      | LEAD 2022 burden and `public/geo/dte-tracts.topo.json`                                  |
-| `scripts/seed/pulse.ts`     | Household Pulse, Michigan and the U.S.                                                  |
-| `scripts/seed/lib.ts`       | Download cache, rounding, and the `SeedBundle` type                                     |
+| File                        | Bundle                                                                                                            |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `scripts/seed/financial.ts` | SEC XBRL cash dividends, shares and revenue growth, Yahoo share prices, estimated market cap, transcribed CEO pay |
+| `scripts/seed/eia861.ts`    | EIA-861 customer class totals and the service counties                                                            |
+| `scripts/seed/shutoffs.ts`  | Reads `scripts/seed/data/dte-shutoffs.json`                                                                       |
+| `scripts/seed/lead.ts`      | LEAD 2022 burden and `public/geo/dte-tracts.topo.json`                                                            |
+| `scripts/seed/pulse.ts`     | Household Pulse, Michigan and the U.S.                                                                            |
+| `scripts/seed/lib.ts`       | Download cache, rounding, and the `SeedBundle` type                                                               |
 
 CEO pay and shutoff counts are transcribed. Change `scripts/seed/data/dte-ceo-pay.json` or `dte-shutoffs.json` only after checking the filing. Downloads are cached in `scripts/seed/.cache/`, which git ignores.
 
@@ -184,7 +184,7 @@ CEO pay and shutoff counts are transcribed. Change `scripts/seed/data/dte-ceo-pa
 
 `src/styles.css` is Tailwind 4. Colors are `oklch` tokens on `:root`, then exposed to Tailwind through `@theme inline`. Components use token classes (`bg-background`, `text-foreground`, `bg-primary`) rather than raw color values.
 
-Fonts are loaded in `src/routes/__root.tsx`: Fraunces for headings (`font-display`) and Public Sans for text.
+Fonts are loaded in `src/routes/__root.tsx`: Inter for headings (`font-display`) and Open Sans for text.
 
 Layout width is `max-w-6xl` with horizontal padding. The header and footer are `src/components/site-header.tsx` and `src/components/site-footer.tsx`.
 
@@ -230,6 +230,6 @@ Tests cover ingest only: parsing, column kinds, findings, the match to verified 
 
 - Verified data changes only when someone runs `npm run seed` and commits the new `verified.json`.
 - Uploads and the hourly limit exist only in the local Node process.
-- A correlation on Compare or an upload page is a pattern over overlapping years. The copy says it is not a cause.
+- A correlation on an upload page is a pattern over overlapping years. The copy says it is not a cause.
 - Community numbers are labeled unverified. Do not present them as agency figures.
 - Do not rewrite published git history. No force push, and no rebase or amend of commits that are already on the remote.

@@ -32,16 +32,13 @@ export function SiteHeader() {
             activeOptions={{ exact: true }}
             activeProps={{ className: activeClass }}
           >
-            Home
+            Compare
           </Link>
           <Link to="/household" className={navLinkClass} activeProps={{ className: activeClass }}>
             Household Experience
           </Link>
           <Link to="/financials" className={navLinkClass} activeProps={{ className: activeClass }}>
             DTE Financials
-          </Link>
-          <Link to="/compare" className={navLinkClass} activeProps={{ className: activeClass }}>
-            Compare
           </Link>
           <Link to="/data" className={navLinkClass} activeProps={{ className: activeClass }}>
             Your data

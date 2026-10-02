@@ -21,6 +21,7 @@ export interface SnapshotMeasure {
   definition: string;
   annualAgg: AnnualAgg;
   sourceSlug: string;
+  additionalSourceSlugs?: string[];
 }
 
 /** [measure, period, grain, dimension, geoId, value]. Tuples keep the file small. */

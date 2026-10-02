@@ -46,6 +46,8 @@ const MEASURE_KEYWORDS: Record<MeasureSlug, RegExp> = {
   revenue: /\brevenues?\b/i,
   stock_price: /\b(stock|share price|closing price)\b/i,
   dividends_per_share: /\bdividends?\b/i,
+  market_cap: /\b(market cap|market capitalization|company valuation)\b/i,
+  dividends_paid: /\b(total|cash) dividends?\b/i,
   revenue_growth: /\brevenue growth\b/i,
   ceo_total_pay: /\b(ceo|compensation|executive pay)\b/i,
   mi_energy_insecurity: /\b(insecur\w*|unable to pay|forgo|unsafe temperature)/i,

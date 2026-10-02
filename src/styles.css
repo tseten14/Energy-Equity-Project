@@ -3,9 +3,8 @@
 @import "tw-animate-css";
 
 /*
- * Design system — "DTE, in Plain Terms"
- * Warm civic editorial: cream paper, ink type, brick-red brand, teal accent.
- * All colors are oklch semantic tokens. Never hardcode colors in components.
+ * Energy Equity Project palette for DTE, in Plain Terms.
+ * All page colors flow through semantic tokens. The map uses light-to-dark blue.
  */
 
 @theme inline {
@@ -15,9 +14,9 @@
   --radius-xl: calc(var(--radius) + 6px);
   --radius-2xl: calc(var(--radius) + 16px);
 
-  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
-  --font-body: "Public Sans", system-ui, -apple-system, sans-serif;
-  --font-sans: "Public Sans", system-ui, -apple-system, sans-serif;
+  --font-display: "Inter", system-ui, -apple-system, sans-serif;
+  --font-body: "Open Sans", system-ui, -apple-system, sans-serif;
+  --font-sans: "Open Sans", system-ui, -apple-system, sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -38,8 +37,8 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --color-amber: var(--amber);
-  --color-amber-foreground: var(--amber-foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -57,54 +56,52 @@
 :root {
   --radius: 1.75rem;
 
-  --paper: oklch(0.975 0.011 85);
-  --cream: oklch(0.936 0.025 85);
-  --ink: oklch(0.243 0.018 55);
+  --paper: #ffffff;
+  --cream: #dee7e4;
+  --ink: #002e55;
 
-  --background: oklch(0.975 0.011 85);
-  --foreground: oklch(0.243 0.018 55);
-  --card: oklch(0.975 0.011 85);
-  --card-foreground: oklch(0.243 0.018 55);
-  --popover: oklch(0.975 0.011 85);
-  --popover-foreground: oklch(0.243 0.018 55);
+  --background: #ffffff;
+  --foreground: #002e55;
+  --card: #ffffff;
+  --card-foreground: #002e55;
+  --popover: #ffffff;
+  --popover-foreground: #002e55;
 
-  --primary: oklch(0.574 0.181 35.5);
-  --primary-foreground: oklch(0.975 0.011 85);
+  --primary: #1577bf;
+  --primary-foreground: #ffffff;
 
-  --secondary: oklch(0.936 0.025 85);
-  --secondary-foreground: oklch(0.243 0.018 55);
+  --secondary: #707769;
+  --secondary-foreground: #002e55;
 
-  --muted: oklch(0.936 0.025 85);
-  --muted-foreground: oklch(0.47 0.015 55);
+  --muted: #dee7e4;
+  --muted-foreground: #002e55;
 
-  --accent: oklch(0.462 0.069 177);
-  --accent-foreground: oklch(0.975 0.011 85);
+  --accent: #094094;
+  --accent-foreground: #ffffff;
 
-  --amber: oklch(0.755 0.125 78);
-  --amber-foreground: oklch(0.243 0.018 55);
+  --highlight: #ffc857;
+  --highlight-foreground: #002e55;
 
-  --destructive: oklch(0.55 0.2 27);
-  --destructive-foreground: oklch(0.975 0.011 85);
+  --destructive: #ab3428;
+  --destructive-foreground: #ffffff;
 
-  --border: oklch(0.243 0.018 55 / 12%);
-  --input: oklch(0.243 0.018 55 / 14%);
-  --ring: oklch(0.574 0.181 35.5);
+  --border: rgb(0 46 85 / 16%);
+  --input: rgb(0 46 85 / 18%);
+  --ring: #094094;
 
-  /* Charts: series colors drawn from the brand palette */
-  --chart-1: var(--primary);
-  --chart-2: var(--accent);
-  --chart-3: var(--amber);
-  --chart-4: oklch(0.243 0.018 55 / 55%);
-  --chart-grid: oklch(0.243 0.018 55 / 10%);
-  --chart-empty: oklch(0.243 0.018 55 / 8%);
+  --chart-1: #ab3428;
+  --chart-2: #1577bf;
+  --chart-3: #ffc857;
+  --chart-4: #707769;
+  --chart-grid: rgb(0 46 85 / 12%);
+  --chart-empty: #969ea4;
 
-  /* Sequential scale for maps, pale cream to deep brick */
-  --chart-seq-1: oklch(0.94 0.035 88);
-  --chart-seq-2: oklch(0.87 0.075 80);
-  --chart-seq-3: oklch(0.79 0.115 68);
-  --chart-seq-4: oklch(0.68 0.155 48);
-  --chart-seq-5: oklch(0.56 0.175 35);
-  --chart-seq-6: oklch(0.43 0.14 30);
+  --chart-seq-1: #dee7e4;
+  --chart-seq-2: #bfd8e6;
+  --chart-seq-3: #96c1df;
+  --chart-seq-4: #63a4d2;
+  --chart-seq-5: #1577bf;
+  --chart-seq-6: #002e55;
 }
 
 @layer base {

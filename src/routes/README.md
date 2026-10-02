@@ -5,10 +5,10 @@ Pages are files in this directory. TanStack Start turns each file into a URL. Do
 | File                  | URL                | What it shows                                                      |
 | --------------------- | ------------------ | ------------------------------------------------------------------ |
 | `__root.tsx`          | every page         | Header, footer, fonts, and the error and 404 screens               |
-| `index.tsx`           | `/`                | Four headline figures and links into the rest of the site          |
-| `household.tsx`       | `/household`       | Energy-burden map, burden by income, shutoffs, and electric prices |
-| `financials.tsx`      | `/financials`      | Stock price, dividends, revenue growth, and CEO pay                |
-| `compare.tsx`         | `/compare`         | One household series and one company series on the same years      |
+| `index.tsx`           | `/`                | Compare overview: household and financial findings, plus articles  |
+| `household.tsx`       | `/household`       | Statewide energy insecurity, DTE-area burden, shutoffs, and prices |
+| `financials.tsx`      | `/financials`      | Market capitalization, cash dividends, revenue growth, and CEO pay |
+| `compare.tsx`         | `/compare`         | Redirects old Compare links to `/`                                 |
 | `data.index.tsx`      | `/data`            | File upload and the list of recent community uploads               |
 | `data.$datasetId.tsx` | `/data/:datasetId` | Charts and written findings for one upload                         |
 

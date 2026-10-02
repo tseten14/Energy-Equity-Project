@@ -31,6 +31,7 @@ export interface MeasureSeed {
   definition: string;
   annualAgg: AnnualAgg;
   sourceSlug: string;
+  additionalSourceSlugs?: string[];
 }
 
 export interface ObservationSeed {

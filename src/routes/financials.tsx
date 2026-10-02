@@ -1,4 +1,4 @@
-/** Company page: a summary card and a full chart for stock price, dividends, revenue growth, and CEO pay. */
+/** Company page: company valuation, cash dividends, revenue growth, and CEO pay. */
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -8,11 +8,11 @@ import type { MeasureSummary } from "../data/measures";
 import { financialsQuery } from "../data/queries";
 import type { MeasureSlug } from "../data/types";
 import { citation } from "../lib/citation";
-import { formatChange, formatPeriod, formatValue } from "../lib/format";
+import { formatBillions, formatChange, formatPeriod, formatValue } from "../lib/format";
 
-const title = "DTE Financials — stock, dividends and executive pay | DTE, in Plain Terms";
+const title = "DTE Financials — company value, dividends and executive pay | DTE, in Plain Terms";
 const description =
-  "DTE's stock price, dividends, growth rate and executive compensation, each explained in everyday language.";
+  "DTE's estimated market capitalization, total cash dividends, revenue growth and executive pay, explained in everyday language.";
 
 export const Route = createFileRoute("/financials")({
   head: () => ({
@@ -28,10 +28,14 @@ export const Route = createFileRoute("/financials")({
 });
 
 const DETAIL: Record<string, { title: string; note?: string; kind: "line" | "bar" }> = {
-  stock_price: { title: "Stock price, month by month", kind: "line" },
-  dividends_per_share: {
-    title: "Dividends declared per share, each year",
-    note: "The 2021 drop reflects DTE spinning off its natural gas pipeline business (DT Midstream) that year.",
+  market_cap: {
+    title: "Estimated market capitalization, month by month",
+    note: "Based on each month's closing share price and the most recent shares outstanding reported in DTE's filings.",
+    kind: "line",
+  },
+  dividends_paid: {
+    title: "Cash dividends paid to all common shareholders, each year",
+    note: "This is the company-wide cash total, not the dividend for one share.",
     kind: "bar",
   },
   revenue_growth: {
@@ -66,8 +70,12 @@ function Financials() {
               key={s.measure.slug}
               label={s.measure.label}
               definition={s.measure.definition}
-              value={formatValue(s.latest.value, s.measure.unit)}
-              caption={formatPeriod(s.latest.period, s.grain)}
+              value={
+                s.measure.slug === "market_cap" || s.measure.slug === "dividends_paid"
+                  ? formatBillions(s.latest.value)
+                  : formatValue(s.latest.value, s.measure.unit)
+              }
+              caption={`${formatPeriod(s.latest.period, s.grain)}${s.basisDate ? ` · shares as of ${s.basisDate}` : ""}`}
               change={
                 s.previous
                   ? {
@@ -83,7 +91,7 @@ function Financials() {
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          {(["stock_price", "dividends_per_share", "revenue_growth", "ceo_total_pay"] as const).map(
+          {(["market_cap", "dividends_paid", "revenue_growth", "ceo_total_pay"] as const).map(
             (slug) => {
               const summary = bySlug(slug);
               return summary ? <DetailChart key={slug} summary={summary} /> : null;
@@ -116,11 +124,19 @@ function DetailChart({ summary }: { summary: MeasureSummary }) {
           {
             key: "value",
             label: measure.label,
-            color: measure.slug === "stock_price" ? "var(--chart-2)" : "var(--chart-1)",
+            color: measure.slug === "market_cap" ? "var(--chart-2)" : "var(--chart-1)",
           },
         ]}
-        formatValue={(v) => formatValue(v, measure.unit)}
-        formatTick={(v) => formatValue(v, measure.unit, { short: true })}
+        formatValue={(v) =>
+          measure.slug === "market_cap" || measure.slug === "dividends_paid"
+            ? formatBillions(v)
+            : formatValue(v, measure.unit)
+        }
+        formatTick={(v) =>
+          measure.slug === "market_cap" || measure.slug === "dividends_paid"
+            ? formatBillions(v)
+            : formatValue(v, measure.unit, { short: true })
+        }
         formatX={(x) => (grain === "year" ? String(x) : formatPeriod(String(x), grain))}
         barColor={
           measure.slug === "revenue_growth"
@@ -131,6 +147,11 @@ function DetailChart({ summary }: { summary: MeasureSummary }) {
         className="mt-4 h-60"
       />
       {detail.note ? <p className="mt-3 text-xs text-foreground/60">{detail.note}</p> : null}
+      {summary.basisDate ? (
+        <p className="mt-1 text-xs text-foreground/60">
+          Latest share count used: {summary.basisDate}.
+        </p>
+      ) : null}
     </DataCard>
   );
 }

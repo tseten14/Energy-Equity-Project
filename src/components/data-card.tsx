@@ -53,7 +53,13 @@ export function EmptyChart({
   );
 }
 
-export function SourceLine({ source, year, href, className }: Citation & { className?: string }) {
+export function SourceLine({
+  source,
+  year,
+  href,
+  additionalSources,
+  className,
+}: Citation & { className?: string }) {
   return (
     <p className={cn("mt-3 text-xs text-foreground/50", className)}>
       Source:{" "}
@@ -68,7 +74,20 @@ export function SourceLine({ source, year, href, className }: Citation & { class
         </a>
       ) : (
         source
-      )}{" "}
+      )}
+      {additionalSources?.map((extra) => (
+        <span key={extra.url}>
+          {" + "}
+          <a
+            href={extra.url}
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-dotted underline-offset-2 hover:decoration-solid"
+          >
+            {extra.publisher}
+          </a>
+        </span>
+      ))}{" "}
       · Year: {year}
     </p>
   );

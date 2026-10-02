@@ -25,9 +25,16 @@ const sources = new Map<string, Source>(
 );
 
 const measures = new Map<MeasureSlug, Measure>(
-  snapshot.measures.map(({ sourceSlug, ...m }) => [
+  snapshot.measures.map(({ sourceSlug, additionalSourceSlugs, ...m }) => [
     m.slug,
-    { ...m, source: sources.get(sourceSlug) ?? null },
+    {
+      ...m,
+      source: sources.get(sourceSlug) ?? null,
+      additionalSources: (additionalSourceSlugs ?? []).flatMap((slug) => {
+        const source = sources.get(slug);
+        return source ? [source] : [];
+      }),
+    },
   ]),
 );
 

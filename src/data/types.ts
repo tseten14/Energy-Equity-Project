@@ -20,6 +20,8 @@ export const MEASURE_SLUGS = [
   "revenue",
   "stock_price",
   "dividends_per_share",
+  "market_cap",
+  "dividends_paid",
   "revenue_growth",
   "ceo_total_pay",
   "mi_energy_insecurity",
@@ -43,6 +45,7 @@ export interface Measure {
   definition: string;
   annualAgg: AnnualAgg;
   source: Source | null;
+  additionalSources?: Source[];
 }
 
 export interface Observation {

@@ -55,7 +55,7 @@ function YourData() {
             <Uploader />
           </div>
           <aside className="space-y-6 lg:col-span-4">
-            <div className="rounded-2xl bg-amber/25 p-6 ring-1 ring-amber/40">
+            <div className="rounded-2xl bg-highlight/25 p-6 ring-1 ring-highlight/40">
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground/60">
                 Before you upload
               </p>

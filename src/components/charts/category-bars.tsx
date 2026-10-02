@@ -39,7 +39,7 @@ export function CategoryBars({ items, format, threshold }: CategoryBarsProps) {
               </div>
               <div className="relative h-8 overflow-hidden rounded-full bg-cream">
                 <div
-                  className={cn("h-full rounded-full", high ? "bg-primary" : "bg-amber")}
+                  className={cn("h-full rounded-full", high ? "bg-primary" : "bg-highlight")}
                   style={{ width: position(item.value) }}
                 />
                 {threshold ? (

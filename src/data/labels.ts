@@ -42,9 +42,11 @@ export const MEASURE_PAGES: Record<
   revenue: { label: "Revenue by customer type", to: "/household" },
   stock_price: { label: "Stock price", to: "/financials" },
   dividends_per_share: { label: "Dividends per share", to: "/financials" },
+  market_cap: { label: "Market capitalization", to: "/financials" },
+  dividends_paid: { label: "Cash dividends paid", to: "/financials" },
   revenue_growth: { label: "Revenue growth", to: "/financials" },
   ceo_total_pay: { label: "CEO pay", to: "/financials" },
-  mi_energy_insecurity: { label: "Michigan energy insecurity", to: "/compare" },
+  mi_energy_insecurity: { label: "Michigan energy insecurity", to: "/household" },
 };
 
 /** Michigan counties (3-digit FIPS) in the DTE Electric service area used for the tract map. */

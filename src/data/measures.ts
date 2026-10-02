@@ -2,23 +2,16 @@
  * Server functions the pages call.
  *
  * Each function reads the snapshot, shapes it for one screen, and returns plain
- * JSON. The household, financials, compare, and home pages each have one function.
+ * JSON. The household, financials, and overview pages each have one function.
  */
 import { createServerFn } from "@tanstack/react-start";
-import { z } from "zod";
 
 import { fetchMeasure, fetchMeasures, fetchObservations } from "@/server/measures";
 
-import {
-  FINANCIAL_KEYS,
-  FINANCIAL_OPTIONS,
-  HOUSEHOLD_KEYS,
-  HOUSEHOLD_OPTIONS,
-  MIN_OVERLAP_YEARS,
-} from "./compare";
 import { CUSTOMER_CLASSES, type CustomerClass, type ShutoffService } from "./labels";
-import { alignYears, pearson, toYearly, yearOf } from "./series";
-import type { Grain, Measure, MeasureSlug, Observation, YearPoint } from "./types";
+import { toYearly, yearOf } from "./series";
+import type { Grain, Measure, MeasureSlug, Observation } from "./types";
+import { formatBillions, formatValue } from "../lib/format";
 
 export interface Point {
   period: string;
@@ -32,6 +25,8 @@ export interface MeasureSummary {
   latest: Point;
   /** The value one year before `latest`, when reported. */
   previous: Point | null;
+  /** Date of the SEC share count used for an estimated market capitalization. */
+  basisDate?: string;
 }
 
 const CLASS_MEASURES = [
@@ -75,6 +70,7 @@ function summarize(measure: Measure, observations: Observation[]): MeasureSummar
     series: observations.map(toPoint),
     latest: toPoint(latest),
     previous: previous ? toPoint(previous) : null,
+    ...(measure.slug === "market_cap" && latest.dimension ? { basisDate: latest.dimension } : {}),
   };
 }
 
@@ -164,8 +160,8 @@ export const getHouseholdData = createServerFn({ method: "GET" }).handler(
 );
 
 const FINANCIAL_MEASURES = [
-  "stock_price",
-  "dividends_per_share",
+  "market_cap",
+  "dividends_paid",
   "revenue_growth",
   "ceo_total_pay",
 ] as const;
@@ -181,56 +177,167 @@ export const getFinancialsData = createServerFn({ method: "GET" }).handler(
   },
 );
 
-export interface CompareSide {
+export interface OverviewFinding {
   label: string;
+  value: string;
+  detail: string;
   measure: Measure;
-  points: YearPoint[];
 }
 
-export interface CompareData {
-  household: CompareSide;
-  financial: CompareSide;
-  overlap: number[];
-  correlation: number | null;
+export interface OverviewData {
+  household: OverviewFinding[];
+  financial: OverviewFinding[];
 }
 
-export const compareInput = z.object({
-  household: z.enum(HOUSEHOLD_KEYS),
-  financial: z.enum(FINANCIAL_KEYS),
-});
+/** Dated, sourced facts for the editorial overview at /. */
+export const getOverviewData = createServerFn({ method: "GET" }).handler(
+  async (): Promise<OverviewData> => {
+    const [measures, pulse, burden, bills, electricShutoffs, market, dividends, growth, pay] =
+      await Promise.all([
+        requireMeasures([
+          "mi_energy_insecurity",
+          "energy_burden",
+          "avg_yearly_bill",
+          "shutoffs",
+          "market_cap",
+          "dividends_paid",
+          "revenue_growth",
+          "ceo_total_pay",
+        ]),
+        fetchObservations("mi_energy_insecurity", { geo: "any" }),
+        fetchObservations("energy_burden", { geo: "none" }),
+        fetchObservations("avg_yearly_bill", { dimension: "residential" }),
+        fetchObservations("shutoffs", { dimension: "electric" }),
+        fetchObservations("market_cap"),
+        fetchObservations("dividends_paid"),
+        fetchObservations("revenue_growth"),
+        fetchObservations("ceo_total_pay"),
+      ]);
 
-async function compareSide(option: {
-  measure: MeasureSlug;
-  dimension: string;
-  label: string;
-}): Promise<CompareSide> {
-  const [measure, observations] = await Promise.all([
-    fetchMeasure(option.measure),
-    fetchObservations(option.measure, { dimension: option.dimension, geo: "none" }),
-  ]);
-  return { label: option.label, measure, points: toYearly(observations, measure.annualAgg) };
-}
+    const pulseItems = [
+      ["unable_to_pay", "Could not pay an energy bill in full"],
+      ["forgo_necessities", "Went without necessities to pay an energy bill"],
+      ["unsafe_temperature", "Kept the home at an unsafe temperature"],
+    ] as const;
+    const pulseFindings: OverviewFinding[] = pulseItems.flatMap(([key, label]) => {
+      const row = pulse.find((item) => item.dimension === key && item.geoId === "MI");
+      return row
+        ? [
+            {
+              label,
+              value: formatValue(row.value, "percent"),
+              detail: `Michigan statewide · all utilities · ${yearOf(row.period)}`,
+              measure: measures.mi_energy_insecurity,
+            },
+          ]
+        : [];
+    });
 
-/** The two yearly series for /compare, aligned on years both were fully reported. */
-export const getCompareSeries = createServerFn({ method: "GET" })
-  .validator(compareInput)
-  .handler(async ({ data }): Promise<CompareData> => {
-    const [household, financial] = await Promise.all([
-      compareSide(HOUSEHOLD_OPTIONS[data.household]),
-      compareSide(FINANCIAL_OPTIONS[data.financial]),
-    ]);
-    const aligned = alignYears(household.points, financial.points);
+    const low = burden.find((row) => row.dimension === "0-30%");
+    const overall = burden.find((row) => row.dimension === "all");
+    const latestBill = bills.at(-1);
+    const fullYears = toYearly(electricShutoffs, "sum");
+    const latestShutoffs = fullYears.at(-1);
+    const latestMarket = market.at(-1);
+    const priorMarket = latestMarket
+      ? market.find(
+          (row) =>
+            row.period === `${yearOf(latestMarket.period) - 1}${latestMarket.period.slice(4)}`,
+        )
+      : undefined;
+    const latestDividends = dividends.at(-1);
+    const latestGrowth = growth.at(-1);
+    const latestPay = pay.at(-1);
+
     return {
-      household,
-      financial,
-      overlap: aligned.map((p) => p.year),
-      correlation: pearson(
-        aligned.map((p) => p.a),
-        aligned.map((p) => p.b),
-        MIN_OVERLAP_YEARS,
-      ),
+      household: [
+        ...pulseFindings,
+        ...(low && overall
+          ? [
+              {
+                label: "Energy burden for very low-income households",
+                value: formatValue(low.value, "percent"),
+                detail: `DTE service-area geography · ${yearOf(low.period)} · ${formatValue(overall.value, "percent")} for all households`,
+                measure: measures.energy_burden,
+              },
+            ]
+          : []),
+        ...(latestBill
+          ? [
+              {
+                label: "Average yearly DTE Electric home bill",
+                value: formatValue(latestBill.value, "usd"),
+                detail: `DTE-reported residential electricity · ${yearOf(latestBill.period)}`,
+                measure: measures.avg_yearly_bill,
+              },
+            ]
+          : []),
+        ...(latestShutoffs
+          ? [
+              {
+                label: "Electric shutoffs for nonpayment",
+                value: formatValue(latestShutoffs.value, "count"),
+                detail: `DTE-reported · full year ${latestShutoffs.year}`,
+                measure: measures.shutoffs,
+              },
+            ]
+          : []),
+      ],
+      financial: [
+        ...(latestMarket
+          ? [
+              {
+                label: "Estimated value of all DTE shares",
+                value: formatBillions(latestMarket.value),
+                detail: `Market capitalization · ${latestMarket.period.slice(0, 7)} · share count as of ${latestMarket.dimension}`,
+                measure: measures.market_cap,
+              },
+            ]
+          : []),
+        ...(latestMarket && priorMarket
+          ? [
+              {
+                label: "Change in DTE's estimated market value",
+                value: `${((latestMarket.value / priorMarket.value - 1) * 100).toFixed(1)}%`,
+                detail: `Same month a year earlier · ${priorMarket.period.slice(0, 7)} to ${latestMarket.period.slice(0, 7)}`,
+                measure: measures.market_cap,
+              },
+            ]
+          : []),
+        ...(latestDividends
+          ? [
+              {
+                label: "Cash paid to all common shareholders",
+                value: formatBillions(latestDividends.value),
+                detail: `Annual DTE dividends · ${yearOf(latestDividends.period)}`,
+                measure: measures.dividends_paid,
+              },
+            ]
+          : []),
+        ...(latestGrowth
+          ? [
+              {
+                label: "Year-over-year operating revenue growth",
+                value: formatValue(latestGrowth.value, "percent"),
+                detail: `DTE Energy · ${yearOf(latestGrowth.period)}`,
+                measure: measures.revenue_growth,
+              },
+            ]
+          : []),
+        ...(latestPay
+          ? [
+              {
+                label: "CEO total compensation",
+                value: formatValue(latestPay.value, "usd"),
+                detail: `DTE proxy statement · ${yearOf(latestPay.period)}`,
+                measure: measures.ceo_total_pay,
+              },
+            ]
+          : []),
+      ],
     };
-  });
+  },
+);
 
 export interface MichiganContext {
   measure: Measure;
@@ -250,48 +357,6 @@ export const getMichiganContext = createServerFn({ method: "GET" }).handler(
     return {
       measure,
       indicators: keys.map((key) => ({ key, michigan: pick(key, "MI"), us: pick(key, "US") })),
-    };
-  },
-);
-
-export interface Headlines {
-  burden: { measure: Measure; veryLow: number; overall: number };
-  price: { measure: Measure; first: YearPoint; latest: YearPoint };
-  shutoffs: { measure: Measure; year: number; total: number };
-  ceoPay: { measure: Measure; latest: YearPoint };
-}
-
-/** The four numbers on the home page. */
-export const getHeadlines = createServerFn({ method: "GET" }).handler(
-  async (): Promise<Headlines> => {
-    const [measures, burden, price, shutoffs, pay] = await Promise.all([
-      requireMeasures(["energy_burden", "avg_price_kwh", "shutoffs", "ceo_total_pay"]),
-      fetchObservations("energy_burden", { geo: "none" }),
-      fetchObservations("avg_price_kwh", { dimension: "residential" }),
-      fetchObservations("shutoffs"),
-      fetchObservations("ceo_total_pay"),
-    ]);
-
-    const prices = toYearly(price, "mean");
-    const shutoffYears = new Map<number, number>();
-    for (const service of new Set(shutoffs.map((o) => o.dimension))) {
-      const rows = shutoffs.filter((o) => o.dimension === service);
-      for (const p of toYearly(rows, "sum"))
-        shutoffYears.set(p.year, (shutoffYears.get(p.year) ?? 0) + p.value);
-    }
-    const shutoffYear = Math.max(...shutoffYears.keys());
-    const payYears = toYearly(pay, "sum");
-    const band = (key: string) => burden.find((o) => o.dimension === key)?.value ?? Number.NaN;
-
-    return {
-      burden: { measure: measures.energy_burden, veryLow: band("0-30%"), overall: band("all") },
-      price: { measure: measures.avg_price_kwh, first: prices[0]!, latest: prices.at(-1)! },
-      shutoffs: {
-        measure: measures.shutoffs,
-        year: shutoffYear,
-        total: shutoffYears.get(shutoffYear) ?? 0,
-      },
-      ceoPay: { measure: measures.ceo_total_pay, latest: payYears.at(-1)! },
     };
   },
 );

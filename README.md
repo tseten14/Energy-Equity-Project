@@ -13,16 +13,15 @@ Developers changing the code should read [CODEBASE.md](CODEBASE.md) next. It cov
 
 ## Pages
 
-| Page                 | URL           | What you see                                                                                                            |
-| -------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Home                 | `/`           | Four headline figures: energy burden, the residential price of electricity, shutoffs, and CEO pay                       |
-| Household Experience | `/household`  | A census-tract map of energy burden, burden by income group, monthly shutoffs, and electricity prices by customer class |
-| DTE Financials       | `/financials` | Month-end stock price, yearly dividends, revenue growth, and CEO total pay                                              |
-| Compare              | `/compare`    | One household measure and one company measure on the same years, plus a correlation and a Michigan-wide context panel   |
-| Your data            | `/data`       | Upload a file and browse recent community uploads                                                                       |
-| Upload result        | `/data/<id>`  | Charts and written findings for one upload. Search engines are asked not to index it                                    |
+| Page                 | URL           | What you see                                                                                                    |
+| -------------------- | ------------- | --------------------------------------------------------------------------------------------------------------- |
+| Compare              | `/`           | Sourced household and DTE financial findings alongside five articles about DTE                                  |
+| Household Experience | `/household`  | Michigan statewide energy insecurity, energy burden in DTE's service area, DTE shutoffs, and electricity prices |
+| DTE Financials       | `/financials` | Estimated market capitalization, total cash dividends, revenue growth, and CEO total pay                        |
+| Your data            | `/data`       | Upload a file and browse recent community uploads                                                               |
+| Upload result        | `/data/<id>`  | Charts and written findings for one upload. Search engines are asked not to index it                            |
 
-The Compare page keeps the chosen measures in the URL, for example `/compare?household=electric_shutoffs&financial=ceo_total_pay`.
+Older `/compare` links redirect to the Compare overview at `/`.
 
 ## Where the verified numbers come from
 
@@ -30,7 +29,7 @@ The Compare page keeps the chosen measures in the URL, for example `/compare?hou
 
 | Bundle      | Source                                                                                                | What it contributes                                                                                                                                                                  |
 | ----------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `financial` | SEC company-facts API (CIK 0000936340) and Yahoo Finance                                              | Dividends per share, year-over-year operating-revenue growth, and the month-end DTE stock price                                                                                      |
+| `financial` | SEC company-facts API (CIK 0000936340) and Yahoo Finance                                              | Total cash dividends paid, shares outstanding, month-end DTE share price, estimated market capitalization, and revenue growth. Per-share series remain available to upload analysis  |
 | `financial` | DTE proxy statements (SEC Form DEF 14A), transcribed in `scripts/seed/data/dte-ceo-pay.json`          | Total yearly pay for the CEO                                                                                                                                                         |
 | `eia`       | U.S. Energy Information Administration Form EIA-861                                                   | Residential, commercial, and industrial customers, sales, revenue, average price, and average yearly bill. Also the 22 Lower Peninsula counties where DTE Electric reports customers |
 | `shutoffs`  | Michigan Public Service Commission case U-18120, transcribed in `scripts/seed/data/dte-shutoffs.json` | Monthly electric, gas, and combination shutoffs for nonpayment                                                                                                                       |
@@ -66,7 +65,7 @@ Observations in the snapshot are stored as tuples to keep the file small:
 
 Yearly charts do not treat a partial year as a full year. A year is included only when every period in it was reported. Monthly series can be summed, averaged, or reduced to the last value of the year, depending on `annualAgg` for that measure.
 
-The Compare page and the upload analysis only report a correlation when the two series share at least four years. The page states that a correlation is a pattern, not evidence that one series caused the other.
+Upload analysis only reports a correlation when two series share at least four years. It states that a correlation is a pattern, not evidence that one series caused the other.
 
 ## Community uploads
 
