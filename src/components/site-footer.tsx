@@ -6,7 +6,7 @@ export function SiteFooter() {
           DTE, in Plain Terms — an independent, non-partisan project.
         </p>
         <p className="text-sm text-foreground/55">
-          No figures are shown until verified data is loaded.
+          Every figure links to its public source. Community uploads are marked unverified.
         </p>
       </div>
     </footer>

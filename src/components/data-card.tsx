@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 
-/**
- * Presentation-only building blocks.
- * No dataset has been supplied yet, so every card renders a labeled empty state
- * instead of a number. Nothing here invents values, sources, or takeaways.
- */
+import type { Citation } from "@/lib/citation";
+import { cn } from "@/lib/utils";
+
+import { Sparkline } from "./charts/sparkline";
+
+/** Shared building blocks. Every figure on the site is shown with its source and data year. */
 
 export function SectionIntro({
   eyebrow,
@@ -32,7 +33,14 @@ export function SectionIntro({
   );
 }
 
-export function EmptyChart({ height = "h-40", label = "Data not loaded yet" }: { height?: string; label?: string }) {
+/** For data that genuinely does not exist. Never used as a loading placeholder for real figures. */
+export function EmptyChart({
+  height = "h-40",
+  label = "No data available",
+}: {
+  height?: string;
+  label?: string;
+}) {
   return (
     <div
       role="status"
@@ -45,10 +53,23 @@ export function EmptyChart({ height = "h-40", label = "Data not loaded yet" }: {
   );
 }
 
-export function SourceLine({ source, year }: { source: string; year: string }) {
+export function SourceLine({ source, year, href, className }: Citation & { className?: string }) {
   return (
-    <p className="mt-3 text-xs text-foreground/50">
-      Source: {source} · Year: {year}
+    <p className={cn("mt-3 text-xs text-foreground/50", className)}>
+      Source:{" "}
+      {href ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          className="underline decoration-dotted underline-offset-2 hover:decoration-solid"
+        >
+          {source}
+        </a>
+      ) : (
+        source
+      )}{" "}
+      · Year: {year}
     </p>
   );
 }
@@ -57,26 +78,27 @@ export function DataCard({
   title,
   description,
   definition,
-  source,
-  year,
   children,
-}: {
+  className,
+  ...cite
+}: Citation & {
   title: string;
-  description?: string;
+  description?: ReactNode;
   definition?: string;
-  source: string;
-  year: string;
   children?: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="rounded-2xl bg-paper p-6 ring-1 ring-border">
+    <div className={cn("rounded-2xl bg-paper p-6 ring-1 ring-border", className)}>
       <h3 className="font-display text-xl font-semibold">{title}</h3>
       {description ? <p className="mt-1 text-sm text-foreground/60">{description}</p> : null}
       {definition ? (
-        <p className="mt-3 rounded-xl bg-cream px-4 py-3 text-sm text-foreground/75">{definition}</p>
+        <p className="mt-3 rounded-xl bg-cream px-4 py-3 text-sm text-foreground/75">
+          {definition}
+        </p>
       ) : null}
       {children ?? <EmptyChart />}
-      <SourceLine source={source} year={year} />
+      <SourceLine {...cite} />
     </div>
   );
 }
@@ -84,23 +106,41 @@ export function DataCard({
 export function MeasureCard({
   label,
   definition,
-  source,
-  year,
-}: {
+  value,
+  caption,
+  change,
+  series,
+  ...cite
+}: Citation & {
   label: string;
   definition: string;
-  source: string;
-  year: string;
+  value: string;
+  /** What the value refers to, e.g. "2025" or "Sep 2026". */
+  caption: string;
+  change?: { text: string; against: string } | undefined;
+  series?: number[] | undefined;
 }) {
   return (
-    <div className="rounded-2xl bg-paper p-6 ring-1 ring-border">
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground/45">{label}</p>
-      <p className="mt-3 font-display text-4xl font-semibold" aria-label="No value available yet">
-        —
+    <div className="flex flex-col rounded-2xl bg-paper p-6 ring-1 ring-border">
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground/45">
+        {label}
       </p>
-      <p className="mt-2 text-sm text-foreground/60">{definition}</p>
-      <EmptyChart height="h-16" />
-      <SourceLine source={source} year={year} />
+      <p className="mt-3 font-display text-4xl font-semibold tabular-nums">{value}</p>
+      <p className="mt-1 text-xs text-foreground/55">
+        {caption}
+        {change ? (
+          <>
+            {" · "}
+            <span className="font-semibold text-foreground/75">{change.text}</span> vs{" "}
+            {change.against}
+          </>
+        ) : null}
+      </p>
+      <p className="mt-3 text-sm text-foreground/60">{definition}</p>
+      <div className="mt-auto">
+        {series && series.length > 1 ? <Sparkline values={series} /> : null}
+        <SourceLine {...cite} />
+      </div>
     </div>
   );
 }

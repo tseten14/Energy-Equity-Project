@@ -45,6 +45,13 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-empty: var(--chart-empty);
 }
 
 :root {
@@ -82,6 +89,22 @@
   --border: oklch(0.243 0.018 55 / 12%);
   --input: oklch(0.243 0.018 55 / 14%);
   --ring: oklch(0.574 0.181 35.5);
+
+  /* Charts: series colors drawn from the brand palette */
+  --chart-1: var(--primary);
+  --chart-2: var(--accent);
+  --chart-3: var(--amber);
+  --chart-4: oklch(0.243 0.018 55 / 55%);
+  --chart-grid: oklch(0.243 0.018 55 / 10%);
+  --chart-empty: oklch(0.243 0.018 55 / 8%);
+
+  /* Sequential scale for maps, pale cream to deep brick */
+  --chart-seq-1: oklch(0.94 0.035 88);
+  --chart-seq-2: oklch(0.87 0.075 80);
+  --chart-seq-3: oklch(0.79 0.115 68);
+  --chart-seq-4: oklch(0.68 0.155 48);
+  --chart-seq-5: oklch(0.56 0.175 35);
+  --chart-seq-6: oklch(0.43 0.14 30);
 }
 
 @layer base {

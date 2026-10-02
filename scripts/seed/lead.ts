@@ -13,13 +13,20 @@ const LEAD_YEAR = 2022;
 const LEAD_ZIP = "https://data.openei.org/files/6219/MI-2022-LEAD-data.zip";
 const LEAD_TRACTS_CSV = "MI AMI Census Tracts 2022.csv";
 const TRACTS_ZIP = "https://www2.census.gov/geo/tiger/GENZ2022/shp/cb_2022_26_tract_500k.zip";
-const GEO_OUT = join(dirname(fileURLToPath(import.meta.url)), "../../public/geo/dte-tracts.topo.json");
+const GEO_OUT = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../public/geo/dte-tracts.topo.json",
+);
 
 // Delta County is in the Upper Peninsula, hundreds of miles from the contiguous service area;
 // leaving it out keeps the map legible.
 const EXCLUDED_COUNTIES = new Set(["Delta"]);
 
-const normalizeCounty = (name: string) => name.replace(/ County$/, "").replaceAll(".", "").trim();
+const normalizeCounty = (name: string) =>
+  name
+    .replace(/ County$/, "")
+    .replaceAll(".", "")
+    .trim();
 
 async function tractShapefile(): Promise<string> {
   const dir = unzip(await download(TRACTS_ZIP, "tracts-mi-2022.zip"));
@@ -28,7 +35,9 @@ async function tractShapefile(): Promise<string> {
 
 /** County FIPS codes (3 digits) for DTE Electric's Lower Peninsula service counties. */
 async function serviceCountyFips(shp: string): Promise<Map<string, string>> {
-  const names = new Set((await dteServiceCounties()).map(normalizeCounty).filter((n) => !EXCLUDED_COUNTIES.has(n)));
+  const names = new Set(
+    (await dteServiceCounties()).map(normalizeCounty).filter((n) => !EXCLUDED_COUNTIES.has(n)),
+  );
   const output = await mapshaper.applyCommands(`-i "${shp}" -o format=csv out.csv`);
   const rows = Papa.parse<{ COUNTYFP: string; NAMELSADCO: string }>(String(output["out.csv"]), {
     header: true,
@@ -40,7 +49,8 @@ async function serviceCountyFips(shp: string): Promise<Map<string, string>> {
     const name = normalizeCounty(row.NAMELSADCO);
     if (names.has(name)) fips.set(row.COUNTYFP, name);
   }
-  if (fips.size !== names.size) throw new Error(`Matched ${fips.size} of ${names.size} service counties`);
+  if (fips.size !== names.size)
+    throw new Error(`Matched ${fips.size} of ${names.size} service counties`);
   return fips;
 }
 
@@ -67,7 +77,12 @@ interface Totals {
   energy: number;
 }
 
-const add = (totals: Totals | undefined, units: number, income: number, energy: number): Totals => ({
+const add = (
+  totals: Totals | undefined,
+  units: number,
+  income: number,
+  energy: number,
+): Totals => ({
   units: (totals?.units ?? 0) + units,
   income: (totals?.income ?? 0) + income,
   energy: (totals?.energy ?? 0) + energy,
@@ -96,7 +111,8 @@ async function aggregateLead(countyFips: Set<string>) {
 
     const units = Number(cell("UNITS"));
     const income = Number(cell("HINCP*UNITS"));
-    const energy = Number(cell("ELEP*UNITS")) + Number(cell("GASP*UNITS")) + Number(cell("FULP*UNITS"));
+    const energy =
+      Number(cell("ELEP*UNITS")) + Number(cell("GASP*UNITS")) + Number(cell("FULP*UNITS"));
     if (![units, income, energy].every(Number.isFinite)) continue;
 
     byTract.set(tract, add(byTract.get(tract), units, income, energy));
@@ -122,19 +138,41 @@ export async function leadBundle(): Promise<SeedBundle> {
   for (const [tract, totals] of byTract) {
     const value = burden(totals);
     if (value !== null) {
-      observations.push({ measureSlug: "energy_burden", period, grain: "year", dimension: "all", geoId: tract, value });
+      observations.push({
+        measureSlug: "energy_burden",
+        period,
+        grain: "year",
+        dimension: "all",
+        geoId: tract,
+        value,
+      });
     }
   }
   for (const [band, totals] of byBand) {
     const value = burden(totals);
     if (value !== null) {
-      observations.push({ measureSlug: "energy_burden", period, grain: "year", dimension: band, value });
+      observations.push({
+        measureSlug: "energy_burden",
+        period,
+        grain: "year",
+        dimension: band,
+        value,
+      });
     }
   }
-  const area = [...byBand.values()].reduce<Totals | undefined>((sum, t) => add(sum, t.units, t.income, t.energy), undefined);
+  const area = [...byBand.values()].reduce<Totals | undefined>(
+    (sum, t) => add(sum, t.units, t.income, t.energy),
+    undefined,
+  );
   const areaBurden = area && burden(area);
   if (areaBurden != null) {
-    observations.push({ measureSlug: "energy_burden", period, grain: "year", dimension: "all", value: areaBurden });
+    observations.push({
+      measureSlug: "energy_burden",
+      period,
+      grain: "year",
+      dimension: "all",
+      value: areaBurden,
+    });
   }
 
   return {

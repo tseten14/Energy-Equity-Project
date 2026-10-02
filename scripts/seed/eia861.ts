@@ -63,7 +63,9 @@ async function yearObservations(year: number): Promise<ObservationSeed[]> {
 
 /** Michigan counties where DTE Electric reports customers, from the EIA-861 service territory file. */
 export async function dteServiceCounties(): Promise<string[]> {
-  const rows = sheetRows(await workbook(SERVICE_TERRITORY_YEAR, `Service_Territory_${SERVICE_TERRITORY_YEAR}.xlsx`));
+  const rows = sheetRows(
+    await workbook(SERVICE_TERRITORY_YEAR, `Service_Territory_${SERVICE_TERRITORY_YEAR}.xlsx`),
+  );
   return rows.filter((r) => num(r[1]) === DTE_ELECTRIC && r[4] === "MI").map((r) => String(r[5]));
 }
 
@@ -79,7 +81,16 @@ export async function eiaBundle(): Promise<SeedBundle> {
     unit: SeedBundle["measures"][number]["unit"],
     definition: string,
     annualAgg: SeedBundle["measures"][number]["annualAgg"] = "sum",
-  ) => ({ slug, side: "household", label, unit, definition, annualAgg, sourceSlug: "eia-861" }) as const;
+  ) =>
+    ({
+      slug,
+      side: "household",
+      label,
+      unit,
+      definition,
+      annualAgg,
+      sourceSlug: "eia-861",
+    }) as const;
 
   return {
     name: "EIA-861 customer classes",
@@ -107,9 +118,25 @@ export async function eiaBundle(): Promise<SeedBundle> {
         "What customers paid on average for one kilowatt-hour, including fuel and other charges: revenue divided by electricity sold.",
         "mean",
       ),
-      measure("sales_kwh", "Electricity used", "kwh", "Kilowatt-hours of electricity DTE sold to the class in the year."),
-      measure("customers", "Customers", "count", "Number of customer accounts in the class.", "mean"),
-      measure("revenue", "Total revenue", "usd", "Money DTE Electric collected from the class for electricity in the year."),
+      measure(
+        "sales_kwh",
+        "Electricity used",
+        "kwh",
+        "Kilowatt-hours of electricity DTE sold to the class in the year.",
+      ),
+      measure(
+        "customers",
+        "Customers",
+        "count",
+        "Number of customer accounts in the class.",
+        "mean",
+      ),
+      measure(
+        "revenue",
+        "Total revenue",
+        "usd",
+        "Money DTE Electric collected from the class for electricity in the year.",
+      ),
     ],
     observations,
   };

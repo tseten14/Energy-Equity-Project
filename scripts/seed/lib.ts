@@ -46,7 +46,10 @@ export interface SeedBundle {
 }
 
 export async function fetchText(url: string, init?: RequestInit): Promise<string> {
-  const res = await fetch(url, { ...init, headers: { "User-Agent": USER_AGENT, ...init?.headers } });
+  const res = await fetch(url, {
+    ...init,
+    headers: { "User-Agent": USER_AGENT, ...init?.headers },
+  });
   if (!res.ok) throw new Error(`GET ${url} failed: ${res.status} ${res.statusText}`);
   return res.text();
 }

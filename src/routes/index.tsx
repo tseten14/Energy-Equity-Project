@@ -1,4 +1,11 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+
+import { SourceLine } from "../components/data-card";
+import type { Headlines } from "../data/measures";
+import { headlinesQuery } from "../data/queries";
+import { citation } from "../lib/citation";
+import { formatValue } from "../lib/format";
 
 const title = "DTE, in Plain Terms — household energy costs and company finances";
 const description =
@@ -13,10 +20,13 @@ export const Route = createFileRoute("/")({
       { property: "og:description", content: description },
     ],
   }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(headlinesQuery()),
   component: Home,
 });
 
 function Home() {
+  const { data } = useSuspenseQuery(headlinesQuery());
+
   return (
     <section className="py-16 sm:py-24">
       <div className="mx-auto max-w-6xl px-5 sm:px-8">
@@ -50,9 +60,13 @@ function Home() {
                 Compare the two sides
               </Link>
             </div>
-            <p className="mt-6 max-w-[46ch] text-sm text-foreground/50">
-              No datasets have been loaded yet. Until real data arrives, every chart on this site
-              shows a clearly labeled empty state rather than an estimate.
+            <p className="mt-6 max-w-[50ch] text-sm text-foreground/55">
+              The figures come from federal agencies, the Michigan Public Service Commission and
+              DTE's own filings. Have a dataset of your own?{" "}
+              <Link to="/data" className="font-semibold text-primary underline underline-offset-2">
+                Upload it
+              </Link>{" "}
+              and see how it relates.
             </p>
           </div>
 
@@ -90,7 +104,57 @@ function Home() {
             </div>
           </div>
         </div>
+
+        <HeadlineStrip data={data} />
       </div>
     </section>
+  );
+}
+
+function HeadlineStrip({ data }: { data: Headlines }) {
+  const { burden, price, shutoffs, ceoPay } = data;
+  const priceRise = ((price.latest.value - price.first.value) / price.first.value) * 100;
+
+  const stats = [
+    {
+      value: formatValue(burden.veryLow, "percent"),
+      text: `of income goes to home energy for very low-income households in DTE's area, against ${formatValue(burden.overall, "percent")} for all households.`,
+      to: "/household" as const,
+      measure: burden.measure,
+    },
+    {
+      value: formatValue(price.latest.value, "cents_per_kwh"),
+      text: `per kilowatt-hour paid by homes in ${price.latest.year}, up ${Math.round(priceRise)}% since ${price.first.year}.`,
+      to: "/household" as const,
+      measure: price.measure,
+    },
+    {
+      value: formatValue(shutoffs.total, "count"),
+      text: `electric and gas shutoffs for nonpayment in ${shutoffs.year}.`,
+      to: "/household" as const,
+      measure: shutoffs.measure,
+    },
+    {
+      value: formatValue(ceoPay.latest.value, "usd"),
+      text: `in total pay for DTE's CEO in ${ceoPay.latest.year}.`,
+      to: "/financials" as const,
+      measure: ceoPay.measure,
+    },
+  ];
+
+  return (
+    <div className="mt-16 grid gap-px overflow-hidden rounded-2xl bg-border ring-1 ring-border sm:grid-cols-2 lg:grid-cols-4">
+      {stats.map((s) => (
+        <div key={s.measure.slug} className="flex flex-col bg-paper p-6">
+          <Link to={s.to} className="group">
+            <p className="font-display text-4xl font-semibold tabular-nums group-hover:text-primary">
+              {s.value}
+            </p>
+            <p className="mt-2 text-sm text-foreground/70">{s.text}</p>
+          </Link>
+          <SourceLine {...citation(s.measure)} className="mt-auto pt-3" />
+        </div>
+      ))}
+    </div>
   );
 }

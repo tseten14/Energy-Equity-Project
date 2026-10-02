@@ -34,7 +34,8 @@ async function collect(): Promise<SeedBundle[]> {
   const selected = only ? { [only]: bundles[only] } : bundles;
   const results: SeedBundle[] = [];
   for (const [key, build] of Object.entries(selected)) {
-    if (!build) throw new Error(`Unknown bundle "${key}". Options: ${Object.keys(bundles).join(", ")}`);
+    if (!build)
+      throw new Error(`Unknown bundle "${key}". Options: ${Object.keys(bundles).join(", ")}`);
     console.log(`→ ${key}`);
     const bundle = await build();
     console.log(`  ${bundle.measures.length} measures, ${bundle.observations.length} observations`);
@@ -49,7 +50,9 @@ async function upsert(bundles: SeedBundle[]) {
   if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
     throw new Error("Set SUPABASE_URL and SUPABASE_SECRET_KEY in .env, or run with --sql.");
   }
-  const db = createClient<Database>(SUPABASE_URL, SUPABASE_SECRET_KEY, { auth: { persistSession: false } });
+  const db = createClient<Database>(SUPABASE_URL, SUPABASE_SECRET_KEY, {
+    auth: { persistSession: false },
+  });
 
   for (const bundle of bundles) {
     const { data: sources, error: sourceError } = await db
@@ -108,7 +111,11 @@ function toRow(o: SeedBundle["observations"][number]) {
 }
 
 const lit = (value: string | number | null) =>
-  value === null ? "null" : typeof value === "number" ? String(value) : `'${value.replaceAll("'", "''")}'`;
+  value === null
+    ? "null"
+    : typeof value === "number"
+      ? String(value)
+      : `'${value.replaceAll("'", "''")}'`;
 
 function toSql(bundles: SeedBundle[]): string {
   const statements: string[] = ["begin;"];
@@ -130,7 +137,10 @@ function toSql(bundles: SeedBundle[]): string {
     for (let i = 0; i < rows.length; i += 500) {
       const values = rows
         .slice(i, i + 500)
-        .map((r) => `(${[r.measure_slug, r.period, r.grain, r.dimension, r.geo_id, r.value].map(lit).join(", ")})`);
+        .map(
+          (r) =>
+            `(${[r.measure_slug, r.period, r.grain, r.dimension, r.geo_id, r.value].map(lit).join(", ")})`,
+        );
       statements.push(
         `insert into observations (measure_slug, period, grain, dimension, geo_id, value) values\n${values.join(",\n")};`,
       );

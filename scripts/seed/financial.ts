@@ -1,6 +1,13 @@
 import { readFileSync } from "node:fs";
 
-import { fetchJson, monthPeriod, round, yearPeriod, type ObservationSeed, type SeedBundle } from "./lib";
+import {
+  fetchJson,
+  monthPeriod,
+  round,
+  yearPeriod,
+  type ObservationSeed,
+  type SeedBundle,
+} from "./lib";
 
 const DTE_CIK = "0000936340";
 const COMPANY_FACTS_URL = `https://data.sec.gov/api/xbrl/companyfacts/CIK${DTE_CIK}.json`;
@@ -24,7 +31,12 @@ function annualFacts(facts: CompanyFacts, tags: string[], unit: string): Map<num
   for (const tag of tags) {
     for (const fact of facts.facts["us-gaap"][tag]?.units[unit] ?? []) {
       const isCalendarYear = fact.start?.endsWith("-01-01") && fact.end.endsWith("-12-31");
-      if (!fact.form.startsWith("10-K") || !isCalendarYear || fact.start!.slice(0, 4) !== fact.end.slice(0, 4)) continue;
+      if (
+        !fact.form.startsWith("10-K") ||
+        !isCalendarYear ||
+        fact.start!.slice(0, 4) !== fact.end.slice(0, 4)
+      )
+        continue;
       const year = Number(fact.end.slice(0, 4));
       const current = best.get(year);
       if (!current || fact.filed > current.filed) best.set(year, fact);
@@ -38,7 +50,11 @@ async function secObservations(): Promise<ObservationSeed[]> {
 
   const dividends = annualFacts(facts, ["CommonStockDividendsPerShareDeclared"], "USD/shares");
   // DTE reported total operating revenue under "Revenues" through 2017 and the regulated-plus-unregulated tag since.
-  const revenue = annualFacts(facts, ["Revenues", "RegulatedAndUnregulatedOperatingRevenue"], "USD");
+  const revenue = annualFacts(
+    facts,
+    ["Revenues", "RegulatedAndUnregulatedOperatingRevenue"],
+    "USD",
+  );
 
   const observations: ObservationSeed[] = [...dividends].map(([year, value]) => ({
     measureSlug: "dividends_per_share",
@@ -61,7 +77,9 @@ async function secObservations(): Promise<ObservationSeed[]> {
 }
 
 interface YahooChart {
-  chart: { result: { timestamp: number[]; indicators: { quote: { close: (number | null)[] }[] } }[] };
+  chart: {
+    result: { timestamp: number[]; indicators: { quote: { close: (number | null)[] }[] } }[];
+  };
 }
 
 async function stockPriceObservations(): Promise<ObservationSeed[]> {
@@ -79,7 +97,14 @@ async function stockPriceObservations(): Promise<ObservationSeed[]> {
     const period = monthPeriod(date.getUTCFullYear(), date.getUTCMonth() + 1);
     const close = closes[i];
     if (close == null || period === currentMonth) return [];
-    return [{ measureSlug: "stock_price", period, grain: "month", value: round(close) } satisfies ObservationSeed];
+    return [
+      {
+        measureSlug: "stock_price",
+        period,
+        grain: "month",
+        value: round(close),
+      } satisfies ObservationSeed,
+    ];
   });
 }
 
@@ -158,7 +183,8 @@ export async function financialBundle(): Promise<SeedBundle> {
         side: "financial",
         label: "Growth rate",
         unit: "percent",
-        definition: "How much DTE's total operating revenue rose or fell compared with the year before.",
+        definition:
+          "How much DTE's total operating revenue rose or fell compared with the year before.",
         annualAgg: "mean",
         sourceSlug: "sec-xbrl",
       },

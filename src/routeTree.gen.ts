@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as FinancialsRouteImport } from './routes/financials'
 import { Route as HouseholdRouteImport } from './routes/household'
+import { Route as DataIndexRouteImport } from './routes/data.index'
+import { Route as DataDatasetIdRouteImport } from './routes/data.$datasetId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +36,32 @@ const HouseholdRoute = HouseholdRouteImport.update({
   path: '/household',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DataIndexRoute = DataIndexRouteImport.update({
+  id: '/data/',
+  path: '/data/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DataDatasetIdRoute = DataDatasetIdRouteImport.update({
+  id: '/data/$datasetId',
+  path: '/data/$datasetId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
   '/financials': typeof FinancialsRoute
   '/household': typeof HouseholdRoute
+  '/data/$datasetId': typeof DataDatasetIdRoute
+  '/data/': typeof DataIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/compare': typeof CompareRoute
   '/financials': typeof FinancialsRoute
   '/household': typeof HouseholdRoute
+  '/data/$datasetId': typeof DataDatasetIdRoute
+  '/data': typeof DataIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +69,34 @@ export interface FileRoutesById {
   '/compare': typeof CompareRoute
   '/financials': typeof FinancialsRoute
   '/household': typeof HouseholdRoute
+  '/data/$datasetId': typeof DataDatasetIdRoute
+  '/data/': typeof DataIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/compare' | '/financials' | '/household'
+  fullPaths:
+    | '/'
+    | '/compare'
+    | '/financials'
+    | '/household'
+    | '/data/$datasetId'
+    | '/data/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/compare' | '/financials' | '/household'
-  id: '__root__' | '/' | '/compare' | '/financials' | '/household'
+  to:
+    | '/'
+    | '/compare'
+    | '/financials'
+    | '/household'
+    | '/data/$datasetId'
+    | '/data'
+  id:
+    | '__root__'
+    | '/'
+    | '/compare'
+    | '/financials'
+    | '/household'
+    | '/data/$datasetId'
+    | '/data/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +104,8 @@ export interface RootRouteChildren {
   CompareRoute: typeof CompareRoute
   FinancialsRoute: typeof FinancialsRoute
   HouseholdRoute: typeof HouseholdRoute
+  DataDatasetIdRoute: typeof DataDatasetIdRoute
+  DataIndexRoute: typeof DataIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +138,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HouseholdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/data/': {
+      id: '/data/'
+      path: '/data'
+      fullPath: '/data/'
+      preLoaderRoute: typeof DataIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data/$datasetId': {
+      id: '/data/$datasetId'
+      path: '/data/$datasetId'
+      fullPath: '/data/$datasetId'
+      preLoaderRoute: typeof DataDatasetIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +160,8 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRoute: CompareRoute,
   FinancialsRoute: FinancialsRoute,
   HouseholdRoute: HouseholdRoute,
+  DataDatasetIdRoute: DataDatasetIdRoute,
+  DataIndexRoute: DataIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

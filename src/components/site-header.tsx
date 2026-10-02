@@ -21,7 +21,12 @@ export function SiteHeader() {
           </span>
         </Link>
         <nav className="flex flex-wrap items-center gap-1.5" aria-label="Main">
-          <Link to="/" className={navLinkClass} activeOptions={{ exact: true }} activeProps={{ className: activeClass }}>
+          <Link
+            to="/"
+            className={navLinkClass}
+            activeOptions={{ exact: true }}
+            activeProps={{ className: activeClass }}
+          >
             Home
           </Link>
           <Link to="/household" className={navLinkClass} activeProps={{ className: activeClass }}>
@@ -32,6 +37,9 @@ export function SiteHeader() {
           </Link>
           <Link to="/compare" className={navLinkClass} activeProps={{ className: activeClass }}>
             Compare
+          </Link>
+          <Link to="/data" className={navLinkClass} activeProps={{ className: activeClass }}>
+            Your data
           </Link>
         </nav>
       </div>

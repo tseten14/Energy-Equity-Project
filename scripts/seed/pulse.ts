@@ -11,9 +11,18 @@ const TABLE_URL = `https://www2.census.gov/programs-surveys/demo/tables/hhp/2024
 
 // Each indicator spans five answer columns: almost every month, some months, 1–2 months, never, did not report.
 const INDICATORS = [
-  { dimension: "forgo_necessities", header: "Household reduced or forwent expenses for basic household necessities" },
-  { dimension: "unsafe_temperature", header: "Household kept home at a temperature that felt unsafe or unhealthy" },
-  { dimension: "unable_to_pay", header: "Household was unable to pay an energy bill or unable to pay the full bill amount" },
+  {
+    dimension: "forgo_necessities",
+    header: "Household reduced or forwent expenses for basic household necessities",
+  },
+  {
+    dimension: "unsafe_temperature",
+    header: "Household kept home at a temperature that felt unsafe or unhealthy",
+  },
+  {
+    dimension: "unable_to_pay",
+    header: "Household was unable to pay an energy bill or unable to pay the full bill amount",
+  },
 ] as const;
 
 const num = (v: unknown) => (typeof v === "number" ? v : 0);
@@ -43,14 +52,17 @@ function indicatorShares(book: XLSX.WorkBook, sheet: "MI" | "US"): ObservationSe
 }
 
 export async function pulseBundle(): Promise<SeedBundle> {
-  const book = XLSX.read(readFileSync(await download(TABLE_URL, `hps-2024-${CYCLE}-housing4.xlsx`)));
+  const book = XLSX.read(
+    readFileSync(await download(TABLE_URL, `hps-2024-${CYCLE}-housing4.xlsx`)),
+  );
   return {
     name: "Household Pulse energy insecurity",
     sources: [
       {
         slug: "census-pulse",
         publisher: "U.S. Census Bureau",
-        title: "Household Pulse Survey, Housing Table 4: Household energy use and spending in the last 12 months (Cycle 09)",
+        title:
+          "Household Pulse Survey, Housing Table 4: Household energy use and spending in the last 12 months (Cycle 09)",
         url: "https://www.census.gov/data/tables/2024/demo/hhp/cycle09.html",
         dataYear: "2024 (Aug 20 – Sep 16)",
       },
