@@ -9,6 +9,8 @@ The site has two kinds of data:
 
 This project is independent. It is not published by DTE Energy.
 
+Developers changing the code should read [CODEBASE.md](CODEBASE.md) next. It covers the technical stack, how a request moves through the app, and which files to open first.
+
 ## Pages
 
 | Page                 | URL           | What you see                                                                                                            |
@@ -174,3 +176,5 @@ Comments explain why a line exists when the code alone does not. They do not res
 - A comment inside a function marks a limit, a data quirk, or an ordering constraint.
 
 `src/components/ui/` is the shared component kit. Those files follow the kit's own structure and are not narrated line by line. The site's behavior lives in `src/routes`, `src/data`, `src/server`, `src/lib`, and `src/components/charts`.
+
+The stack, the request path, and a reading order for those folders are in [CODEBASE.md](CODEBASE.md).
