@@ -11,7 +11,7 @@ import { fetchMeasure, fetchMeasures, fetchObservations } from "@/server/measure
 import { CUSTOMER_CLASSES, type CustomerClass, type ShutoffService } from "./labels";
 import { toYearly, yearOf } from "./series";
 import type { Grain, Measure, MeasureSlug, Observation } from "./types";
-import { formatBillions, formatValue } from "../lib/format";
+import { formatMonth, formatValue } from "../lib/format";
 
 export interface Point {
   period: string;
@@ -189,6 +189,24 @@ export interface OverviewData {
   financial: OverviewFinding[];
 }
 
+function longDate(iso: string): string | undefined {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return undefined;
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${iso}T00:00:00Z`));
+}
+
+function comparedWith(current: number, previous: number, when: string): string {
+  const pct = (current / previous - 1) * 100;
+  const amount = `${Math.abs(pct).toFixed(1)}%`;
+  if (pct < -0.05) return ` That is ${amount} lower than ${when}.`;
+  if (pct > 0.05) return ` That is ${amount} higher than ${when}.`;
+  return ` That is about the same as ${when}.`;
+}
+
 /** Dated, sourced facts for the editorial overview at /. */
 export const getOverviewData = createServerFn({ method: "GET" }).handler(
   async (): Promise<OverviewData> => {
@@ -221,12 +239,15 @@ export const getOverviewData = createServerFn({ method: "GET" }).handler(
     ] as const;
     const pulseFindings: OverviewFinding[] = pulseItems.flatMap(([key, label]) => {
       const row = pulse.find((item) => item.dimension === key && item.geoId === "MI");
+      const national = pulse.find((item) => item.dimension === key && item.geoId === "US");
       return row
         ? [
             {
               label,
               value: formatValue(row.value, "percent"),
-              detail: `Michigan statewide · all utilities · ${yearOf(row.period)}`,
+              detail: national
+                ? `U.S. comparison: ${formatValue(national.value, "percent")}`
+                : `Michigan statewide · ${yearOf(row.period)}`,
               measure: measures.mi_energy_insecurity,
             },
           ]
@@ -248,6 +269,13 @@ export const getOverviewData = createServerFn({ method: "GET" }).handler(
     const latestDividends = dividends.at(-1);
     const latestGrowth = growth.at(-1);
     const latestPay = pay.at(-1);
+    const shareCountAsOf = latestMarket?.dimension
+      ? longDate(latestMarket.dimension)
+      : undefined;
+    const marketChange =
+      latestMarket && priorMarket
+        ? comparedWith(latestMarket.value, priorMarket.value, formatMonth(priorMarket.period))
+        : "";
 
     return {
       household: [
@@ -257,7 +285,7 @@ export const getOverviewData = createServerFn({ method: "GET" }).handler(
               {
                 label: "Energy burden for very low-income households",
                 value: formatValue(low.value, "percent"),
-                detail: `DTE service-area geography · ${yearOf(low.period)} · ${formatValue(overall.value, "percent")} for all households`,
+                detail: `DTE service area, ${yearOf(low.period)}. All households there: ${formatValue(overall.value, "percent")}.`,
                 measure: measures.energy_burden,
               },
             ]
@@ -265,9 +293,9 @@ export const getOverviewData = createServerFn({ method: "GET" }).handler(
         ...(latestBill
           ? [
               {
-                label: "Average yearly DTE Electric home bill",
+                label: "Average yearly electric bill for a home",
                 value: formatValue(latestBill.value, "usd"),
-                detail: `DTE-reported residential electricity · ${yearOf(latestBill.period)}`,
+                detail: `What a DTE Electric household paid in ${yearOf(latestBill.period)}.`,
                 measure: measures.avg_yearly_bill,
               },
             ]
@@ -277,7 +305,7 @@ export const getOverviewData = createServerFn({ method: "GET" }).handler(
               {
                 label: "Electric shutoffs for nonpayment",
                 value: formatValue(latestShutoffs.value, "count"),
-                detail: `DTE-reported · full year ${latestShutoffs.year}`,
+                detail: `DTE customers disconnected in ${latestShutoffs.year}.`,
                 measure: measures.shutoffs,
               },
             ]
@@ -287,19 +315,9 @@ export const getOverviewData = createServerFn({ method: "GET" }).handler(
         ...(latestMarket
           ? [
               {
-                label: "Estimated value of all DTE shares",
-                value: formatBillions(latestMarket.value),
-                detail: `Market capitalization · ${latestMarket.period.slice(0, 7)} · share count as of ${latestMarket.dimension}`,
-                measure: measures.market_cap,
-              },
-            ]
-          : []),
-        ...(latestMarket && priorMarket
-          ? [
-              {
-                label: "Change in DTE's estimated market value",
-                value: `${((latestMarket.value / priorMarket.value - 1) * 100).toFixed(1)}%`,
-                detail: `Same month a year earlier · ${priorMarket.period.slice(0, 7)} to ${latestMarket.period.slice(0, 7)}`,
+                label: "Value of the whole company",
+                value: formatValue(latestMarket.value, "usd"),
+                detail: `Estimated for ${formatMonth(latestMarket.period)} from the share price and the share count reported on ${shareCountAsOf ?? "the latest filing"}.${marketChange}`,
                 measure: measures.market_cap,
               },
             ]
@@ -307,9 +325,9 @@ export const getOverviewData = createServerFn({ method: "GET" }).handler(
         ...(latestDividends
           ? [
               {
-                label: "Cash paid to all common shareholders",
-                value: formatBillions(latestDividends.value),
-                detail: `Annual DTE dividends · ${yearOf(latestDividends.period)}`,
+                label: "Dividends paid to all shareholders",
+                value: formatValue(latestDividends.value, "usd"),
+                detail: `Total cash DTE paid common shareholders in ${yearOf(latestDividends.period)}.`,
                 measure: measures.dividends_paid,
               },
             ]
@@ -319,7 +337,7 @@ export const getOverviewData = createServerFn({ method: "GET" }).handler(
               {
                 label: "Year-over-year operating revenue growth",
                 value: formatValue(latestGrowth.value, "percent"),
-                detail: `DTE Energy · ${yearOf(latestGrowth.period)}`,
+                detail: `How DTE's operating revenue changed in ${yearOf(latestGrowth.period)}.`,
                 measure: measures.revenue_growth,
               },
             ]
@@ -329,7 +347,7 @@ export const getOverviewData = createServerFn({ method: "GET" }).handler(
               {
                 label: "CEO total compensation",
                 value: formatValue(latestPay.value, "usd"),
-                detail: `DTE proxy statement · ${yearOf(latestPay.period)}`,
+                detail: `Total pay reported for DTE's CEO in ${yearOf(latestPay.period)}.`,
                 measure: measures.ceo_total_pay,
               },
             ]
