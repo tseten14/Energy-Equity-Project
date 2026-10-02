@@ -56,30 +56,32 @@ export function TrendChart({
   );
   const hasNegative = data.some((row) => series.some((s) => Number(row[s.key]) < 0));
 
-  const axes = (
-    <>
-      <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
-      <XAxis
-        dataKey={xKey}
-        tickLine={false}
-        axisLine={false}
-        tickMargin={8}
-        tickFormatter={formatX}
-        minTickGap={16}
-      />
-      <YAxis
-        tickLine={false}
-        axisLine={false}
-        width={56}
-        tickFormatter={(v: number) => formatTick(v)}
-        domain={kind === "line" ? ["auto", "auto"] : [hasNegative ? "auto" : 0, "auto"]}
-      />
-      <ChartTooltip
-        cursor={kind === "bar" ? { fill: "var(--chart-empty)" } : true}
-        content={<ValueTooltip series={series} formatValue={formatValue} formatX={formatX} />}
-      />
-    </>
-  );
+  // An array, not a fragment: Recharts 2 can't see inside fragments under React 19.
+  const axes = [
+    <CartesianGrid key="grid" vertical={false} stroke="var(--chart-grid)" />,
+    <XAxis
+      key="x"
+      dataKey={xKey}
+      tickLine={false}
+      axisLine={false}
+      tickMargin={8}
+      tickFormatter={formatX}
+      minTickGap={16}
+    />,
+    <YAxis
+      key="y"
+      tickLine={false}
+      axisLine={false}
+      width={56}
+      tickFormatter={(v: number) => formatTick(v)}
+      domain={kind === "line" ? ["auto", "auto"] : [hasNegative ? "auto" : 0, "auto"]}
+    />,
+    <ChartTooltip
+      key="tooltip"
+      cursor={kind === "bar" ? { fill: "var(--chart-empty)" } : true}
+      content={<ValueTooltip series={series} formatValue={formatValue} formatX={formatX} />}
+    />,
+  ];
 
   return (
     <ChartContainer
