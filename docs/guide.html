@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>DTE, in Plain Terms — a simple guide</title>
+    <style>
+      @page {
+        size: letter;
+        margin: 0.7in 0.75in 0.75in;
+      }
+      * { box-sizing: border-box; }
+      html { font-size: 11.5pt; }
+      body {
+        margin: 0;
+        color: #2c261f;
+        background: #fff;
+        font-family: "Public Sans", "Segoe UI", system-ui, sans-serif;
+        line-height: 1.45;
+      }
+      h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; font-weight: 600; line-height: 1.15; color: #1c1814; }
+      h1 { font-size: 28pt; margin: 0 0 0.25em; letter-spacing: -0.02em; }
+      h2 { font-size: 16pt; margin: 1.35em 0 0.35em; padding-top: 0.15em; border-top: 2px solid #c4552a; break-after: avoid; }
+      h3 { font-size: 12.5pt; margin: 1em 0 0.25em; break-after: avoid; }
+      p { margin: 0.4em 0 0.7em; }
+      .kicker { font-size: 9.5pt; letter-spacing: 0.12em; text-transform: uppercase; color: #c4552a; font-weight: 700; margin: 0 0 0.4em; font-family: system-ui, sans-serif; }
+      .lead { font-size: 13pt; line-height: 1.4; }
+      ul, ol { margin: 0.3em 0 0.8em; padding-left: 1.2em; }
+      li { margin: 0.2em 0; }
+      table { width: 100%; border-collapse: collapse; margin: 0.4em 0 0.9em; font-size: 10.5pt; }
+      th, td { text-align: left; vertical-align: top; padding: 0.35em 0.5em 0.35em 0; border-bottom: 1px solid #e4ddd2; }
+      th { font-size: 9pt; letter-spacing: 0.04em; text-transform: uppercase; color: #6b6258; font-weight: 700; }
+      code, .path { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; background: #f6f1e8; padding: 0.05em 0.28em; border-radius: 3px; }
+      pre { background: #f6f1e8; padding: 0.7em 0.85em; border-radius: 6px; font-size: 10pt; line-height: 1.4; overflow: hidden; }
+      pre code { background: none; padding: 0; }
+      .note { background: #f6f1e8; border-left: 4px solid #2f6f66; padding: 0.55em 0.8em; margin: 0.6em 0 0.9em; }
+      .footer { margin-top: 1.6em; padding-top: 0.5em; border-top: 1px solid #e4ddd2; font-size: 9.5pt; color: #6b6258; }
+      a { color: #9a3d1c; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <p class="kicker">Project guide</p>
+    <h1>DTE, in Plain Terms</h1>
+    <p class="lead">A website that puts household energy costs next to DTE Energy’s finances. Every number has a source. If a number is missing, the page says so.</p>
+    <p>This guide is the short version. It explains what the site does, how to run it, and where to look in the code.</p>
+
+    <h2>1. What the site is</h2>
+    <p>The site is independent. DTE Energy did not publish it.</p>
+    <p>It has two kinds of numbers:</p>
+    <ul>
+      <li><strong>Checked numbers</strong> come from public agencies and from DTE’s own filings. They are saved in the project and shown on the main pages.</li>
+      <li><strong>Uploads</strong> are spreadsheets anyone can add. The site describes them and compares them with the checked numbers. Uploads are marked “not checked.”</li>
+    </ul>
+
+    <h2>2. The pages</h2>
+    <table>
+      <thead>
+        <tr><th>Page</th><th>Address</th><th>What you see</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Home</td><td><code>/</code></td><td>Four big numbers: energy burden, the price of electricity, shutoffs, and CEO pay.</td></tr>
+        <tr><td>Household</td><td><code>/household</code></td><td>A neighborhood map, burden by income, shutoffs, and electricity prices.</td></tr>
+        <tr><td>Financials</td><td><code>/financials</code></td><td>Stock price, dividends, revenue growth, and CEO pay.</td></tr>
+        <tr><td>Compare</td><td><code>/compare</code></td><td>One household number and one company number on the same years.</td></tr>
+        <tr><td>Your data</td><td><code>/data</code></td><td>Upload a file, and see recent uploads.</td></tr>
+        <tr><td>Saved upload</td><td><code>/data/…</code></td><td>Charts and short findings for that file.</td></tr>
+      </tbody>
+    </table>
+    <p>Energy burden means the share of a household’s income that goes to home energy. Above 6% is treated as high.</p>
+    <div class="note">Two lines moving together does not prove that one caused the other. The Compare page says this in plain words.</div>
+
+    <h2>3. Where the checked numbers come from</h2>
+    <p>The site does not call those agencies every time someone opens a page. A script downloads the files once and saves one snapshot: <span class="path">src/server/data/verified.json</span>.</p>
+    <table>
+      <thead>
+        <tr><th>Topic</th><th>Source</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Stock price, dividends, revenue growth</td><td>SEC filings and Yahoo Finance</td></tr>
+        <tr><td>CEO pay</td><td>DTE proxy statements, typed into a JSON file</td></tr>
+        <tr><td>Customers, sales, prices, bills</td><td>U.S. Energy Information Administration (Form EIA-861)</td></tr>
+        <tr><td>Shutoffs</td><td>Michigan Public Service Commission case U-18120, typed into a JSON file</td></tr>
+        <tr><td>Energy burden and the map</td><td>U.S. Department of Energy, LEAD tool, 2022</td></tr>
+        <tr><td>Michigan energy hardship</td><td>U.S. Census Household Pulse Survey</td></tr>
+      </tbody>
+    </table>
+    <p>CEO pay and shutoff counts were copied from PDF reports by hand. Change those files only after checking the original document.</p>
+    <p>To refresh the snapshot:</p>
+    <pre><code>npm run seed</code></pre>
+    <p>To refresh one part only, add <code>--only=financial</code>, <code>eia</code>, <code>shutoffs</code>, <code>lead</code>, or <code>pulse</code>.</p>
+
+    <h2>4. How to run it</h2>
+    <p>You need Node.js. Then, in the project folder:</p>
+    <pre><code>npm i
+npm run dev</code></pre>
+    <p>Open <strong>http://localhost:8080</strong>.</p>
+    <p>The snapshot already in the project is enough. You only run <code>npm run seed</code> when you want newer numbers. The first seed needs the internet. Later runs reuse downloaded files.</p>
+    <table>
+      <thead>
+        <tr><th>Command</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>npm run dev</code></td><td>Start the site</td></tr>
+        <tr><td><code>npm run seed</code></td><td>Rebuild the snapshot of checked numbers</td></tr>
+        <tr><td><code>npm test</code></td><td>Test the upload analysis</td></tr>
+        <tr><td><code>npm run typecheck</code></td><td>Check the code for type errors</td></tr>
+        <tr><td><code>npm run lint</code></td><td>Check style</td></tr>
+        <tr><td><code>npm run build</code></td><td>Make the production build</td></tr>
+      </tbody>
+    </table>
+
+    <h2>5. What it is built with</h2>
+    <p>Everything is TypeScript. There is no Python, no separate server app, and no database.</p>
+    <table>
+      <thead>
+        <tr><th>Job</th><th>Tool</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Pages</td><td>React</td></tr>
+        <tr><td>Routes and server</td><td>TanStack Start. A file in <span class="path">src/routes</span> is a page.</td></tr>
+        <tr><td>Loading data</td><td>TanStack Query. The page asks for data before it draws.</td></tr>
+        <tr><td>Dev server and build</td><td>Vite. The site runs on port 8080.</td></tr>
+        <tr><td>Production bundle</td><td>Nitro, aimed at Cloudflare. Local development stays on your computer.</td></tr>
+        <tr><td>Look and layout</td><td>Tailwind CSS. Colors are named tokens in <span class="path">src/styles.css</span>.</td></tr>
+        <tr><td>Line and bar charts</td><td>Recharts</td></tr>
+        <tr><td>Neighborhood map</td><td>d3-geo, using a map file already in the project</td></tr>
+        <tr><td>Income bars</td><td>Plain HTML. No chart library.</td></tr>
+        <tr><td>Checking uploads</td><td>Zod</td></tr>
+        <tr><td>Reading spreadsheets</td><td>Papa Parse for CSV, SheetJS for Excel</td></tr>
+        <tr><td>Optional written summary</td><td>Vercel AI SDK. Skipped if there is no API key.</td></tr>
+        <tr><td>Tests</td><td>Vitest</td></tr>
+      </tbody>
+    </table>
+    <p>The folder <span class="path">src/components/ui</span> is a kit of buttons, menus, and dialogs. The real pages barely use it. The charts use only its chart wrapper.</p>
+
+    <h2>6. How a page gets a number</h2>
+    <ol>
+      <li>The page file, for example <span class="path">src/routes/household.tsx</span>, asks for its data before it renders.</li>
+      <li>That request goes to a function in <span class="path">src/data/measures.ts</span>.</li>
+      <li>The function reads the snapshot through <span class="path">src/server/measures.ts</span>.</li>
+      <li>The page draws the result with a chart and a source line.</li>
+    </ol>
+    <p>Code under <span class="path">src/server</span> stays on the server. The browser must not import it. The build fails if it does.</p>
+    <p>Each stored number is a short list:</p>
+    <pre><code>[measure, period, grain, dimension, geoId, value]</code></pre>
+    <p><code>period</code> is a date like <code>2024-01-01</code>. <code>grain</code> is month, quarter, or year. <code>dimension</code> is a split such as “homes” or “electric.” <code>geoId</code> is a neighborhood id, or empty when the number is for the whole area.</p>
+    <p>A year is shown only when every month in that year was reported. A half year is never drawn as if it were a full year.</p>
+
+    <h2>7. Where to look in the code</h2>
+    <p>Start with these files, in this order:</p>
+    <ol>
+      <li><span class="path">README.md</span> — the longer project description</li>
+      <li><span class="path">CODEBASE.md</span> — more detail for people changing the code</li>
+      <li><span class="path">src/data/types.ts</span> — what a measure and a number look like</li>
+      <li><span class="path">src/data/measures.ts</span> — how a page’s data is prepared</li>
+      <li><span class="path">src/routes/household.tsx</span> — a typical page</li>
+    </ol>
+    <table>
+      <thead>
+        <tr><th>Folder</th><th>What is in it</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="path">src/routes</span></td><td>The pages</td></tr>
+        <tr><td><span class="path">src/components/charts</span></td><td>Charts and the map</td></tr>
+        <tr><td><span class="path">src/data</span></td><td>Types, labels, and the functions pages call</td></tr>
+        <tr><td><span class="path">src/server</span></td><td>Reading the snapshot, saving uploads, optional AI summary</td></tr>
+        <tr><td><span class="path">src/lib/ingest</span></td><td>Reading an uploaded file and writing the findings</td></tr>
+        <tr><td><span class="path">scripts/seed</span></td><td>Scripts that download or read each source</td></tr>
+        <tr><td><span class="path">public/geo</span></td><td>The neighborhood shapes for the map</td></tr>
+      </tbody>
+    </table>
+
+    <h2>8. Uploads</h2>
+    <p>On <strong>Your data</strong>, the browser reads the file first. The server checks the limits again. It does not trust the browser’s row count.</p>
+    <p>Accepted files: CSV, TSV, Excel (.xlsx), JSON, and one JSON object per line.</p>
+    <ul>
+      <li>Up to 10 MB, 20,000 rows, and 60 columns</li>
+      <li>Up to 10 uploads an hour from the same address</li>
+    </ul>
+    <p>The server then describes the columns, writes a trend, a ranking, and a spread, and lines years or places up with the checked DTE numbers. If an API key is set, it can add a short summary. Any sentence that invents a number is thrown away.</p>
+    <p>Files are saved on the computer running the site, in a folder named <span class="path">.data/uploads</span>. They are not saved in git. Restarting the site clears the hourly limit. A hosted Cloudflare copy of the site has no disk for these files, so uploads work on your machine, not on that host, until a real store is added.</p>
+    <div class="note">Do not upload names, addresses, phone numbers, or account numbers. Uploads can be opened by anyone who has the link.</div>
+    <p>The optional summary uses a file named <span class="path">.env</span>. Copy <span class="path">.env.example</span> and set <code>AI_GATEWAY_API_KEY</code>. Leave it empty and the rest of the site still works. <code>AI_MODEL</code> is optional. The default model is <code>openai/gpt-5.4-mini</code>.</p>
+
+    <h2>9. Before you change something</h2>
+    <ul>
+      <li>Do not fill in a missing year. Leave the gap.</li>
+      <li>Do not treat an upload as an official figure.</li>
+      <li>Format numbers with <span class="path">src/lib/format.ts</span> and show the source with <span class="path">src/lib/citation.ts</span>.</li>
+      <li>Chart colors come from the <code>--chart-</code> names in <span class="path">src/styles.css</span>. Do not hard-code colors in a component.</li>
+      <li>In the line chart, the axes are passed as a list. Do not wrap them in a React fragment, or the axes vanish.</li>
+      <li>Run <code>npm test</code>, <code>npm run typecheck</code>, and <code>npm run build</code> before you share a change. After a visual change, open the page in the browser.</li>
+      <li>Do not rewrite history that is already on GitHub. No force push.</li>
+    </ul>
+
+    <p class="footer">DTE, in Plain Terms — an independent project. Repository: github.com/tseten14/Energy-Equity-Project. Longer notes live in README.md and CODEBASE.md.</p>
+  </body>
+</html>
