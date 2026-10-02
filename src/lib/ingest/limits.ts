@@ -1,4 +1,7 @@
-// Kept free of parsing libraries: the upload schema imports this, and it ships with every page.
+/**
+ * Upload limits and the cell type.
+ * Kept free of parsing libraries: the upload schema imports this, and it ships with every page.
+ */
 
 export const FORMATS = ["csv", "tsv", "xlsx", "json", "ndjson"] as const;
 export type DatasetFormat = (typeof FORMATS)[number];

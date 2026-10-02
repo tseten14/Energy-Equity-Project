@@ -1,3 +1,7 @@
+/**
+ * EIA-861 sales, revenue, and customer counts for DTE Electric, by customer class and year.
+ * Also lists the Michigan counties in the service-territory file.
+ */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 

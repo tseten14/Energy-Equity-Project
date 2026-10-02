@@ -1,3 +1,7 @@
+/**
+ * Census Household Pulse energy-insecurity shares for Michigan and the United States.
+ * The cycle is the last release that published state-level tables.
+ */
 import { readFileSync } from "node:fs";
 
 import * as XLSX from "xlsx";

@@ -1,3 +1,7 @@
+/**
+ * Saves and lists community uploads on the local disk, and builds the verified
+ * series those uploads are compared with. The rate limit stays in memory.
+ */
 import "@tanstack/react-start/server-only";
 
 import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";

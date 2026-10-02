@@ -1,3 +1,7 @@
+/**
+ * Census-tract map of household energy burden.
+ * Tract shapes come from public/geo/dte-tracts.topo.json. Color follows the share of income.
+ */
 import { queryOptions, useQuery } from "@tanstack/react-query";
 import { geoMercator, geoPath } from "d3-geo";
 import type { Feature, FeatureCollection, Geometry } from "geojson";

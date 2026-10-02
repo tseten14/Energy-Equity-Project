@@ -1,3 +1,7 @@
+/**
+ * React Query options shared by route loaders and page components.
+ * Loaders call `ensureQueryData` with these; components call `useSuspenseQuery`.
+ */
 import { queryOptions } from "@tanstack/react-query";
 import type { z } from "zod";
 

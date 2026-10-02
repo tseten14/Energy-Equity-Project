@@ -1,3 +1,7 @@
+/**
+ * The server entry named in vite.config.ts.
+ * It delegates to TanStack Start, then replaces a swallowed server crash with the HTML error page.
+ */
 import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";

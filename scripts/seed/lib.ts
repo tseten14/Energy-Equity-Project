@@ -1,3 +1,7 @@
+/**
+ * Shared helpers for the seed scripts: download with a cache, shape a bundle, and round a figure.
+ * Each source file returns one SeedBundle. scripts/seed/index.ts merges them into the snapshot.
+ */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";

@@ -1,3 +1,8 @@
+/**
+ * Connects an upload to the verified series.
+ * Year columns are correlated with prices, bills, shutoffs, and company figures.
+ * County and tract columns are compared with household energy burden.
+ */
 import { MIN_OVERLAP_YEARS } from "@/data/compare";
 import { DTE_COUNTIES } from "@/data/labels";
 import { alignYears, describeCorrelation, pearson } from "@/data/series";

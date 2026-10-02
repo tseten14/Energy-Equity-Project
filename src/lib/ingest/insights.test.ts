@@ -1,3 +1,4 @@
+/** Checks trend, ranking, and distribution findings, including partial years that must be dropped. */
 import { describe, expect, it } from "vitest";
 
 import { computeInsights, yearlySeries } from "./insights";

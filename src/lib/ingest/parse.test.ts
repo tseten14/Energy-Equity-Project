@@ -1,3 +1,4 @@
+/** Checks that each accepted file format becomes columns and rows, and that over-limit files are rejected. */
 import * as XLSX from "xlsx";
 import { describe, expect, it } from "vitest";
 

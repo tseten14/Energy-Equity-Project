@@ -1,3 +1,7 @@
+/**
+ * Compare page. The two dropdowns are stored in the URL so a comparison can be shared.
+ * Years that were only partly reported are left blank on both charts.
+ */
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";

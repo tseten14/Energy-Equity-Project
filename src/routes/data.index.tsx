@@ -1,3 +1,7 @@
+/**
+ * Upload page. Parsing happens in the browser so a bad file fails before it is sent.
+ * The server analyzes the table and redirects to the results page.
+ */
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useId, useState, type DragEvent } from "react";

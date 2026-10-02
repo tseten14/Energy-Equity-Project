@@ -1,3 +1,7 @@
+/**
+ * Findings that can be computed from the table alone: how a series changed,
+ * which category leads, and how the values are spread out.
+ */
 import type { MeasureSlug, YearPoint } from "@/data/types";
 import { formatNumber } from "@/lib/format";
 

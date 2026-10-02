@@ -1,3 +1,4 @@
+/** Company page: a summary card and a full chart for stock price, dividends, revenue growth, and CEO pay. */
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 

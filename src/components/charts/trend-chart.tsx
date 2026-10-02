@@ -1,3 +1,7 @@
+/**
+ * The line and bar chart used on Financials, Compare, Household, and upload results.
+ * Axes are passed as an array. A React fragment would be invisible to Recharts 2.
+ */
 import {
   Bar,
   BarChart,

@@ -1,3 +1,7 @@
+/**
+ * Monthly shutoffs transcribed from DTE's quarterly reports in MPSC case U-18120.
+ * The counts live in scripts/seed/data/dte-shutoffs.json.
+ */
 import { readFileSync } from "node:fs";
 
 import { monthPeriod, type ObservationSeed, type SeedBundle } from "./lib";

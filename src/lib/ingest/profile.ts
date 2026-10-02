@@ -1,3 +1,7 @@
+/**
+ * Decides what each column is: a number, a year, a date, a county, a census tract, or a category.
+ * Later steps use that decision to choose a chart and a comparison.
+ */
 import { DTE_COUNTIES } from "@/data/labels";
 
 import type { Cell, ParsedTable } from "./parse";

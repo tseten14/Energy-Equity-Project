@@ -1,6 +1,8 @@
+/**
+ * The shape of src/server/data/verified.json, written by `npm run seed`.
+ * Observations are tuples so the file stays small enough to bundle with the server.
+ */
 import type { AnnualAgg, Grain, MeasureSide, MeasureSlug, MeasureUnit } from "@/data/types";
-
-/** The shape of src/server/data/verified.json, written by `npm run seed`. */
 
 export interface SnapshotSource {
   slug: string;

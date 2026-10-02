@@ -1,3 +1,7 @@
+/**
+ * Dividends and revenue growth from the SEC company-facts API, month-end stock price from Yahoo,
+ * and CEO total pay from the transcribed proxy-statement file.
+ */
 import { readFileSync } from "node:fs";
 
 import {

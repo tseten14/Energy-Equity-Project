@@ -1,3 +1,7 @@
+/**
+ * Request middleware for every server call.
+ * A thrown error becomes the HTML error page. Server functions also require a same-origin request.
+ */
 import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";

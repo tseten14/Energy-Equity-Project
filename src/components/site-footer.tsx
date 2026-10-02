@@ -1,3 +1,4 @@
+/** The line under every page: the project is independent, and uploads are unverified. */
 export function SiteFooter() {
   return (
     <footer className="py-10">

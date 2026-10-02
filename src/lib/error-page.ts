@@ -1,3 +1,4 @@
+/** HTML returned when server rendering crashes, before the React app can draw its own error screen. */
 export function renderErrorPage(): string {
   return `<!doctype html>
 <html lang="en">

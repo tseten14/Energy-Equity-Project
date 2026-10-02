@@ -1,3 +1,7 @@
+/**
+ * The pairs a reader can put on the Compare page, and the yearly series an
+ * upload is lined up against. Keys are the values stored in the page URL.
+ */
 import type { MeasureSlug } from "./types";
 
 interface CompareOption {

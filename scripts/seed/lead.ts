@@ -1,3 +1,7 @@
+/**
+ * 2022 LEAD energy burden for Michigan census tracts and income bands,
+ * clipped to the counties DTE Electric reports, plus the tract map.
+ */
 import { createReadStream, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createInterface } from "node:readline";

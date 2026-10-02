@@ -1,3 +1,7 @@
+/**
+ * Results for one community upload. Search engines are asked not to index it.
+ * An unknown id renders the 404 page.
+ */
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import type { ReactNode } from "react";

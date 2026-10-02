@@ -1,3 +1,4 @@
+/** The first rows of an uploaded file, shown before save and again on the results page. */
 import type { Cell } from "@/lib/ingest/parse";
 import { cn } from "@/lib/utils";
 

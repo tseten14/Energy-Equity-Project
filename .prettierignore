@@ -6,3 +6,6 @@ pnpm-lock.yaml
 package-lock.json
 bun.lock
 routeTree.gen.ts
+src/server/data/verified.json
+scripts/seed/data/*.json
+public/geo/*.json

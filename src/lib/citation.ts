@@ -1,3 +1,4 @@
+/** The publisher, year, and link shown under a chart. */
 import type { Measure } from "@/data/types";
 
 export interface Citation {

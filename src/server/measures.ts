@@ -1,3 +1,7 @@
+/**
+ * Reads the verified snapshot into memory once, then serves measures and observations.
+ * Server-only: the JSON file is not shipped to the browser as a module the pages import.
+ */
 import "@tanstack/react-start/server-only";
 
 import type { Measure, MeasureSlug, Observation, Source } from "@/data/types";

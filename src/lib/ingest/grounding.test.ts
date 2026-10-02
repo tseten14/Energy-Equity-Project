@@ -1,3 +1,4 @@
+/** Checks that a sentence survives only when every number in it is already in the facts. */
 import { describe, expect, it } from "vitest";
 
 import { groundedOnly, numbersIn } from "./grounding";

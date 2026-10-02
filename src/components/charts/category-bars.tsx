@@ -1,3 +1,4 @@
+/** Horizontal bars for a small set of labeled categories, such as energy burden by income. */
 import { cn } from "@/lib/utils";
 
 export interface CategoryItem {

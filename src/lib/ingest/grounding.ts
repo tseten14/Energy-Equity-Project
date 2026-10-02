@@ -1,3 +1,7 @@
+/**
+ * Drops model-written sentences that contain a number the computed facts do not support.
+ * Years must match exactly. Other numbers may match after ordinary rounding.
+ */
 const NUMBER = /\d[\d,]*(?:\.\d+)?/g;
 
 const isYear = (n: number) => Number.isInteger(n) && n >= 1900 && n <= 2100;

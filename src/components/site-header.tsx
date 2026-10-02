@@ -1,3 +1,4 @@
+/** The top bar. The current page is marked with a filled pill and `aria-current`. */
 import { Link } from "@tanstack/react-router";
 
 const navLinkClass =

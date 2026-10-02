@@ -1,3 +1,4 @@
+/** True once the viewport is known to be under 768px. False during the first server render. */
 import * as React from "react";
 
 const MOBILE_BREAKPOINT = 768;

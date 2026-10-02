@@ -1,3 +1,7 @@
+/**
+ * Turns an uploaded file into columns and rows.
+ * CSV, TSV, JSON, and NDJSON are parsed here. Excel is loaded only when a workbook is opened.
+ */
 import Papa from "papaparse";
 
 import { LIMITS, type Cell, type DatasetFormat } from "./limits";

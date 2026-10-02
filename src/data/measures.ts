@@ -1,3 +1,9 @@
+/**
+ * Server functions the pages call.
+ *
+ * Each function reads the snapshot, shapes it for one screen, and returns plain
+ * JSON. The household, financials, compare, and home pages each have one function.
+ */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
@@ -79,12 +85,14 @@ async function requireMeasures<T extends MeasureSlug>(
   return Object.fromEntries(
     slugs.map((slug) => {
       const measure = found.get(slug);
-      if (!measure) throw new Error(`Measure ${slug} is not in the database. Run npm run seed.`);
+      if (!measure)
+        throw new Error(`Measure ${slug} is not in the data snapshot. Run npm run seed.`);
       return [slug, measure];
     }),
   ) as Record<T, Measure>;
 }
 
+/** Map, income bands, shutoff months, and customer-class prices for /household. */
 export const getHouseholdData = createServerFn({ method: "GET" }).handler(
   async (): Promise<HouseholdData> => {
     const [
@@ -162,6 +170,7 @@ const FINANCIAL_MEASURES = [
   "ceo_total_pay",
 ] as const;
 
+/** One card per company series on /financials: latest value, prior year, and the yearly points. */
 export const getFinancialsData = createServerFn({ method: "GET" }).handler(
   async (): Promise<MeasureSummary[]> => {
     const [measures, ...series] = await Promise.all([
@@ -202,6 +211,7 @@ async function compareSide(option: {
   return { label: option.label, measure, points: toYearly(observations, measure.annualAgg) };
 }
 
+/** The two yearly series for /compare, aligned on years both were fully reported. */
 export const getCompareSeries = createServerFn({ method: "GET" })
   .validator(compareInput)
   .handler(async ({ data }): Promise<CompareData> => {
@@ -227,6 +237,7 @@ export interface MichiganContext {
   indicators: { key: string; michigan: number | null; us: number | null }[];
 }
 
+/** Statewide Household Pulse shares, with the matching U.S. figure beside each one. */
 export const getMichiganContext = createServerFn({ method: "GET" }).handler(
   async (): Promise<MichiganContext> => {
     const [measure, rows] = await Promise.all([
@@ -250,6 +261,7 @@ export interface Headlines {
   ceoPay: { measure: Measure; latest: YearPoint };
 }
 
+/** The four numbers on the home page. */
 export const getHeadlines = createServerFn({ method: "GET" }).handler(
   async (): Promise<Headlines> => {
     const [measures, burden, price, shutoffs, pay] = await Promise.all([

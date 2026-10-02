@@ -1,3 +1,10 @@
+/**
+ * Shared shapes for a verified figure.
+ *
+ * A measure is one named series (for example residential price per kWh).
+ * An observation is one number in that series: a period, an optional breakdown
+ * such as customer class, an optional place, and the value.
+ */
 export type MeasureSide = "household" | "financial" | "context";
 export type MeasureUnit = "percent" | "usd" | "usd_per_share" | "cents_per_kwh" | "kwh" | "count";
 export type AnnualAgg = "sum" | "mean" | "last";

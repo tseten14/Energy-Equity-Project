@@ -1,3 +1,7 @@
+/**
+ * Household page: tract map, burden by income, shutoffs by year, and electricity prices.
+ * The year buttons filter shutoffs. The map toggle switches between all 22 counties and Metro Detroit.
+ */
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";

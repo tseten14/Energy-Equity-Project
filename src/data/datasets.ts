@@ -1,3 +1,9 @@
+/**
+ * Server functions for community uploads.
+ *
+ * The browser parses the file. This module checks the limits again, builds the
+ * findings, and stores the result. `getDataset` and `listRecentDatasets` read it back.
+ */
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 

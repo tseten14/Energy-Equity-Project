@@ -1,3 +1,4 @@
+/** Checks county, tract, and year detection, including names and codes that should not match. */
 import { describe, expect, it } from "vitest";
 
 import {

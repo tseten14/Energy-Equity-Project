@@ -1,3 +1,4 @@
+/** Formats a verified figure for a card, an axis tick, or a sentence. */
 import type { MeasureUnit } from "@/data/types";
 
 const integer = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });

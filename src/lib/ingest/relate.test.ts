@@ -1,3 +1,4 @@
+/** Checks that an upload is matched to the right verified series, and that weak overlaps are skipped. */
 import { describe, expect, it } from "vitest";
 
 import type { ParsedTable } from "./parse";

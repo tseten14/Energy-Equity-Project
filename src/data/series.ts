@@ -1,3 +1,7 @@
+/**
+ * Turns observations into yearly points and measures how two yearly series move together.
+ * Used by the Compare page and by upload analysis.
+ */
 import type { AnnualAgg, Grain, Observation, YearPoint } from "./types";
 
 const PERIODS_PER_YEAR: Record<Grain, number> = { month: 12, quarter: 4, year: 1 };

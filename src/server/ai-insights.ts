@@ -1,3 +1,7 @@
+/**
+ * Optional plain-language summary of an upload.
+ * Returns null when no API key is set or the request fails, so the rest of the page still saves.
+ */
 import "@tanstack/react-start/server-only";
 
 import { createGateway, generateText, Output } from "ai";

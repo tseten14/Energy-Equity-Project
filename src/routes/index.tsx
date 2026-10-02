@@ -1,3 +1,4 @@
+/** Home page. Four sourced headline figures, each linking to the page that explains it. */
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
